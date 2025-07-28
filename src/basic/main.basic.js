@@ -226,16 +226,10 @@ function main() {
   root.appendChild(manualGuideToggleButton);
   root.appendChild(manualGuideOverlay);
 
-  const lightningDelay = Math.random() * 10000;
-
-  let initialTotalStock = 0;
-  for (let i = 0; i < PRODUCT_LIST.length; i++) {
-    initialTotalStock += PRODUCT_LIST[i].quantity;
-  }
-
   onUpdateSelectOptions();
   handleCalculateCartStuff();
 
+  const lightningDelay = Math.random() * 10000;
   let lastSelectedProductId = null;
 
   setTimeout(() => {
