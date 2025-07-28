@@ -110,43 +110,42 @@ function main() {
   selectElement.id = 'product-select';
   selectElement.className = 'w-full p-3 border border-gray-300 rounded-lg text-base mb-3';
 
-  const addBtn = document.createElement('button');
-  addBtn.id = 'add-to-cart';
-  addBtn.className =
+  const addToCartButton = document.createElement('button');
+  addToCartButton.id = 'add-to-cart';
+  addToCartButton.className =
     'w-full py-3 bg-black text-white text-sm font-medium uppercase tracking-wider hover:bg-gray-800 transition-all';
-  addBtn.innerHTML = 'Add to Cart';
+  addToCartButton.innerHTML = 'Add to Cart';
 
-  const stockInfo = document.createElement('div');
-  stockInfo.id = 'stock-status';
-  stockInfo.className = 'text-xs text-red-500 mt-3 whitespace-pre-line';
+  const stockStatusElement = document.createElement('div');
+  stockStatusElement.id = 'stock-status';
+  stockStatusElement.className = 'text-xs text-red-500 mt-3 whitespace-pre-line';
 
   selectorContainer.appendChild(selectElement);
-  selectorContainer.appendChild(addBtn);
-  selectorContainer.appendChild(stockInfo);
+  selectorContainer.appendChild(addToCartButton);
+  selectorContainer.appendChild(stockStatusElement);
   leftColumn.appendChild(selectorContainer);
 
-  const cartDisp = document.createElement('div');
-  cartDisp.id = 'cart-items';
-  leftColumn.appendChild(cartDisp);
+  const cartItemsContainer = document.createElement('div');
+  cartItemsContainer.id = 'cart-items';
+  leftColumn.appendChild(cartItemsContainer);
 
-  let lastSel = null;
-
-  const manualToggle = document.createElement('button');
-  manualToggle.className =
+  const manualGuideToggleButton = document.createElement('button');
+  manualGuideToggleButton.className =
     'fixed top-4 right-4 bg-black text-white p-3 rounded-full hover:bg-gray-900 transition-colors z-50';
-  manualToggle.innerHTML = `
+  manualGuideToggleButton.innerHTML = `
   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
   </svg>
 `;
 
-  const manualOverlay = document.createElement('div');
-  manualOverlay.className = 'fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300';
+  const manualGuideOverlay = document.createElement('div');
+  manualGuideOverlay.className =
+    'fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300';
 
-  const manualColumn = document.createElement('div');
-  manualColumn.className =
+  const manualGuideSidebar = document.createElement('div');
+  manualGuideSidebar.className =
     'fixed right-0 top-0 h-full w-80 bg-white shadow-2xl p-6 overflow-y-auto z-50 transform translate-x-full transition-transform duration-300';
-  manualColumn.innerHTML = `
+  manualGuideSidebar.innerHTML = `
     <button class="absolute top-4 right-4 text-gray-500 hover:text-black" onclick="document.querySelector('.fixed.inset-0').classList.add('hidden'); this.parentElement.classList.add('translate-x-full')">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -207,34 +206,37 @@ function main() {
     </div>
   `;
 
-  manualToggle.onclick = function () {
-    manualOverlay.classList.toggle('hidden');
-    manualColumn.classList.toggle('translate-x-full');
+  manualGuideToggleButton.onclick = function () {
+    manualGuideOverlay.classList.toggle('hidden');
+    manualGuideSidebar.classList.toggle('translate-x-full');
   };
 
-  manualOverlay.onclick = function (e) {
-    if (e.target === manualOverlay) {
-      manualOverlay.classList.add('hidden');
-      manualColumn.classList.add('translate-x-full');
+  manualGuideOverlay.onclick = function (e) {
+    if (e.target === manualGuideOverlay) {
+      manualGuideOverlay.classList.add('hidden');
+      manualGuideSidebar.classList.add('translate-x-full');
     }
   };
 
-  const lightningDelay = Math.random() * 10000;
-
   gridContainer.appendChild(leftColumn);
   gridContainer.appendChild(rightColumn);
-  manualOverlay.appendChild(manualColumn);
+  manualGuideOverlay.appendChild(manualGuideSidebar);
   root.appendChild(header);
   root.appendChild(gridContainer);
-  root.appendChild(manualToggle);
-  root.appendChild(manualOverlay);
+  root.appendChild(manualGuideToggleButton);
+  root.appendChild(manualGuideOverlay);
 
-  let initStock = 0;
+  const lightningDelay = Math.random() * 10000;
+
+  let initialTotalStock = 0;
   for (let i = 0; i < PRODUCT_LIST.length; i++) {
-    initStock += PRODUCT_LIST[i].quantity;
+    initialTotalStock += PRODUCT_LIST[i].quantity;
   }
+
   onUpdateSelectOptions();
   handleCalculateCartStuff();
+
+  let lastSelectedProductId = null;
 
   setTimeout(() => {
     setInterval(function () {
@@ -249,14 +251,15 @@ function main() {
       }
     }, 30000);
   }, lightningDelay);
+
   setTimeout(function () {
     setInterval(function () {
-      if (cartDisp.children.length === 0) {
+      if (cartItemsContainer.children.length === 0) {
       }
-      if (lastSel) {
+      if (lastSelectedProductId) {
         let suggest = null;
         for (let k = 0; k < PRODUCT_LIST.length; k++) {
-          if (PRODUCT_LIST[k].id !== lastSel) {
+          if (PRODUCT_LIST[k].id !== lastSelectedProductId) {
             if (PRODUCT_LIST[k].quantity > 0) {
               if (!PRODUCT_LIST[k].isRecommended) {
                 suggest = PRODUCT_LIST[k];
@@ -283,6 +286,7 @@ function onUpdateSelectOptions() {
   let totalStock;
   let opt;
   let discountText;
+  const sel = document.getElementById('product-select');
   sel.innerHTML = '';
   totalStock = 0;
   for (let idx = 0; idx < PRODUCT_LIST.length; idx++) {
@@ -326,6 +330,7 @@ function onUpdateSelectOptions() {
     sel.style.borderColor = '';
   }
 }
+
 function handleCalculateCartStuff() {
   let cartItems;
   let subTot;
@@ -351,7 +356,7 @@ function handleCalculateCartStuff() {
   totalAmt = 0;
   itemCnt = 0;
   originalTotal = totalAmt;
-  cartItems = cartDisp.children;
+  cartItems = cartItemsContainer.children;
   subTot = 0;
   bulkDisc = subTot;
   itemDiscounts = [];
@@ -546,8 +551,8 @@ function handleCalculateCartStuff() {
       }
     }
   }
-  stockInfo.textContent = stockMsg;
-  handleStockInfoUpdate();
+  stockStatusElement.textContent = stockMsg;
+  handlestockStatusElementUpdate();
   doRenderBonusPoints();
 }
 var doRenderBonusPoints = function () {
@@ -558,7 +563,7 @@ var doRenderBonusPoints = function () {
   let hasMouse;
   let hasMonitorArm;
   let nodes;
-  if (cartDisp.children.length === 0) {
+  if (cartItemsContainer.children.length === 0) {
     document.getElementById('loyalty-points').style.display = 'none';
     return;
   }
@@ -578,7 +583,7 @@ var doRenderBonusPoints = function () {
   hasKeyboard = false;
   hasMouse = false;
   hasMonitorArm = false;
-  nodes = cartDisp.children;
+  nodes = cartItemsContainer.children;
   for (const node of nodes) {
     let product = null;
     for (let pIdx = 0; pIdx < PRODUCT_LIST.length; pIdx++) {
@@ -643,7 +648,7 @@ function onGetStockTotal() {
   }
   return sum;
 }
-var handleStockInfoUpdate = function () {
+var handlestockStatusElementUpdate = function () {
   let infoMsg;
   let totalStock;
   let messageOptimizer;
@@ -660,22 +665,24 @@ var handleStockInfoUpdate = function () {
       }
     }
   });
-  stockInfo.textContent = infoMsg;
+  stockStatusElement.textContent = infoMsg;
 };
 function doUpdatePricesInCart() {
   let totalCount = 0,
     j = 0;
   let cartItems;
-  while (cartDisp.children[j]) {
-    const qty = cartDisp.children[j].querySelector('.quantity-number');
+  while (cartItemsContainer.children[j]) {
+    const qty = cartItemsContainer.children[j].querySelector('.quantity-number');
     totalCount += qty ? parseInt(qty.textContent) : 0;
     j++;
   }
   totalCount = 0;
-  for (j = 0; j < cartDisp.children.length; j++) {
-    totalCount += parseInt(cartDisp.children[j].querySelector('.quantity-number').textContent);
+  for (j = 0; j < cartItemsContainer.children.length; j++) {
+    totalCount += parseInt(
+      cartItemsContainer.children[j].querySelector('.quantity-number').textContent,
+    );
   }
-  cartItems = cartDisp.children;
+  cartItems = cartItemsContainer.children;
   for (let i = 0; i < cartItems.length; i++) {
     const itemId = cartItems[i].id;
     let product = null;
@@ -706,7 +713,7 @@ function doUpdatePricesInCart() {
   handleCalculateCartStuff();
 }
 main();
-addBtn.addEventListener('click', function () {
+addToCartButton.addEventListener('click', function () {
   const selItem = sel.value;
   let hasItem = false;
   for (let idx = 0; idx < PRODUCT_LIST.length; idx++) {
@@ -760,14 +767,14 @@ addBtn.addEventListener('click', function () {
           <a class="remove-item text-2xs text-gray-500 uppercase tracking-wider cursor-pointer transition-colors border-b border-transparent hover:text-black hover:border-black" data-product-id="${itemToAdd.id}">Remove</a>
         </div>
       `;
-      cartDisp.appendChild(newItem);
+      cartItemsContainer.appendChild(newItem);
       itemToAdd.quantity--;
     }
     handleCalculateCartStuff();
-    lastSel = selItem;
+    lastSelectedProductId = selItem;
   }
 });
-cartDisp.addEventListener('click', function (event) {
+cartItemsContainer.addEventListener('click', function (event) {
   const tgt = event.target;
   if (tgt.classList.contains('quantity-change') || tgt.classList.contains('remove-item')) {
     const prodId = tgt.dataset.productId;
