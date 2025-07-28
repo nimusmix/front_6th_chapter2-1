@@ -219,7 +219,7 @@ function main() {
     }
   };
 
-  const lightningDelay = 30000;
+  const lightningDelay = Math.random() * 10000;
 
   gridContainer.appendChild(leftColumn);
   gridContainer.appendChild(rightColumn);
