@@ -230,22 +230,9 @@ function main() {
   handleCalculateCartStuff();
 
   const lightningDelay = Math.random() * 10000;
+  startLightningSaleInterval(lightningDelay);
+
   let lastSelectedProductId = null;
-
-  setTimeout(() => {
-    setInterval(function () {
-      const luckyIdx = Math.floor(Math.random() * PRODUCT_LIST.length);
-      const luckyItem = PRODUCT_LIST[luckyIdx];
-      if (luckyItem.quantity > 0 && !luckyItem.isOnSale) {
-        luckyItem.price = Math.round((luckyItem.originalPrice * 80) / 100);
-        luckyItem.isOnSale = true;
-        alert(`⚡번개세일! ${luckyItem.name}이(가) 20% 할인 중입니다!`);
-        onUpdateSelectOptions();
-        doUpdatePricesInCart();
-      }
-    }, 30000);
-  }, lightningDelay);
-
   setTimeout(function () {
     setInterval(function () {
       if (cartItemsContainer.children.length === 0) {
@@ -273,6 +260,32 @@ function main() {
     }, 60000);
   }, Math.random() * 20000);
 }
+
+const startLightningSaleInterval = (delay = 10000, interval = 30000) => {
+  setTimeout(() => {
+    setInterval(() => {
+      applyLightningSaleToRandomProduct();
+    }, interval);
+  }, delay);
+};
+
+const applyLightningSaleToRandomProduct = () => {
+  const availableProducts = PRODUCT_LIST.filter(
+    (product) => product.quantity > 0 && !product.isOnSale,
+  );
+
+  if (availableProducts.length === 0) return;
+
+  const randomIndex = Math.floor(Math.random() * availableProducts.length);
+  const product = availableProducts[randomIndex];
+
+  product.price = Math.round((product.originalPrice * 80) / 100);
+  product.isOnSale = true;
+
+  alert(`⚡번개세일! ${product.name}이(가) 20% 할인 중입니다!`);
+  onUpdateSelectOptions();
+  doUpdatePricesInCart();
+};
 
 let sum;
 
