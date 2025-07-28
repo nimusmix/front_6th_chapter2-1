@@ -1,112 +1,77 @@
-let prodList;
-let bonusPts = 0;
-let stockInfo;
-let itemCnt;
-let lastSel;
-let sel;
-let addBtn;
-let totalAmt = 0;
-const PRODUCT_ONE = 'p1';
-const p2 = 'p2';
-const product_3 = 'p3';
-const p4 = 'p4';
-const PRODUCT_5 = `p5`;
-let cartDisp;
+const PRODUCT_IDS = {
+  KEYBOARD: 'p1',
+  MOUSE: 'p2',
+  MONITOR_ARM: 'p3',
+  POUCH: 'p4',
+  SPEAKER: 'p5',
+};
+
+const PRODUCT_LIST = [
+  {
+    id: PRODUCT_IDS.KEYBOARD,
+    name: '버그 없애는 키보드',
+    val: 10000,
+    originalVal: 10000,
+    q: 50,
+    onSale: false,
+    suggestSale: false,
+  },
+  {
+    id: PRODUCT_IDS.MOUSE,
+    name: '생산성 폭발 마우스',
+    val: 20000,
+    originalVal: 20000,
+    q: 30,
+    onSale: false,
+    suggestSale: false,
+  },
+  {
+    id: PRODUCT_IDS.MONITOR_ARM,
+    name: '거북목 탈출 모니터암',
+    val: 30000,
+    originalVal: 30000,
+    q: 20,
+    onSale: false,
+    suggestSale: false,
+  },
+  {
+    id: PRODUCT_IDS.POUCH,
+    name: '에러 방지 노트북 파우치',
+    val: 15000,
+    originalVal: 15000,
+    q: 0,
+    onSale: false,
+    suggestSale: false,
+  },
+  {
+    id: PRODUCT_IDS.SPEAKER,
+    name: `코딩할 때 듣는 Lo-Fi 스피커`,
+    val: 25000,
+    originalVal: 25000,
+    q: 10,
+    onSale: false,
+    suggestSale: false,
+  },
+];
+
 function main() {
-  var root;
-  let header;
-  let gridContainer;
-  let leftColumn;
-  let selectorContainer;
-  let rightColumn;
-  let manualToggle;
-  let manualOverlay;
-  let manualColumn;
-  let lightningDelay;
-  totalAmt = 0;
-  itemCnt = 0;
-  lastSel = null;
-  prodList = [
-    {
-      id: PRODUCT_ONE,
-      name: '버그 없애는 키보드',
-      val: 10000,
-      originalVal: 10000,
-      q: 50,
-      onSale: false,
-      suggestSale: false,
-    },
-    {
-      id: p2,
-      name: '생산성 폭발 마우스',
-      val: 20000,
-      originalVal: 20000,
-      q: 30,
-      onSale: false,
-      suggestSale: false,
-    },
-    {
-      id: product_3,
-      name: '거북목 탈출 모니터암',
-      val: 30000,
-      originalVal: 30000,
-      q: 20,
-      onSale: false,
-      suggestSale: false,
-    },
-    {
-      id: p4,
-      name: '에러 방지 노트북 파우치',
-      val: 15000,
-      originalVal: 15000,
-      q: 0,
-      onSale: false,
-      suggestSale: false,
-    },
-    {
-      id: PRODUCT_5,
-      name: `코딩할 때 듣는 Lo-Fi 스피커`,
-      val: 25000,
-      originalVal: 25000,
-      q: 10,
-      onSale: false,
-      suggestSale: false,
-    },
-  ];
-  var root = document.getElementById('app');
-  header = document.createElement('div');
+  const root = document.getElementById('app');
+  const header = document.createElement('div');
   header.className = 'mb-8';
   header.innerHTML = `
     <h1 class="text-xs font-medium tracking-extra-wide uppercase mb-2">🛒 Hanghae Online Store</h1>
     <div class="text-5xl tracking-tight leading-none">Shopping Cart</div>
     <p id="item-count" class="text-sm text-gray-500 font-normal mt-3">🛍️ 0 items in cart</p>
   `;
-  sel = document.createElement('select');
-  sel.id = 'product-select';
-  gridContainer = document.createElement('div');
-  leftColumn = document.createElement('div');
-  leftColumn['className'] = 'bg-white border border-gray-200 p-8 overflow-y-auto';
-  selectorContainer = document.createElement('div');
-  selectorContainer.className = 'mb-6 pb-6 border-b border-gray-200';
-  sel.className = 'w-full p-3 border border-gray-300 rounded-lg text-base mb-3';
+
+  const gridContainer = document.createElement('div');
   gridContainer.className =
     'grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 flex-1 overflow-hidden';
-  addBtn = document.createElement('button');
-  stockInfo = document.createElement('div');
-  addBtn.id = 'add-to-cart';
-  stockInfo.id = 'stock-status';
-  stockInfo.className = 'text-xs text-red-500 mt-3 whitespace-pre-line';
-  addBtn.innerHTML = 'Add to Cart';
-  addBtn.className =
-    'w-full py-3 bg-black text-white text-sm font-medium uppercase tracking-wider hover:bg-gray-800 transition-all';
-  selectorContainer.appendChild(sel);
-  selectorContainer.appendChild(addBtn);
-  selectorContainer.appendChild(stockInfo);
-  leftColumn.appendChild(selectorContainer);
-  cartDisp = document.createElement('div');
-  leftColumn.appendChild(cartDisp);
-  cartDisp.id = 'cart-items';
-  rightColumn = document.createElement('div');
+
+  const leftColumn = document.createElement('div');
+  leftColumn.className = 'bg-white border border-gray-200 p-8 overflow-y-auto';
+
+  const rightColumn = document.createElement('div');
   rightColumn.className = 'bg-black text-white p-8 flex flex-col';
   rightColumn.innerHTML = `
     <h2 class="text-xs font-medium mb-5 tracking-extra-wide uppercase">Order Summary</h2>
@@ -137,28 +102,53 @@ function main() {
       <span id="points-notice">Earn loyalty points with purchase.</span>
     </p>
   `;
-  sum = rightColumn.querySelector('#cart-total');
-  manualToggle = document.createElement('button');
-  manualToggle.onclick = function () {
-    manualOverlay.classList.toggle('hidden');
-    manualColumn.classList.toggle('translate-x-full');
-  };
+
+  const selectorContainer = document.createElement('div');
+  selectorContainer.className = 'mb-6 pb-6 border-b border-gray-200';
+
+  const selectElement = document.createElement('select');
+  selectElement.id = 'product-select';
+  selectElement.className = 'w-full p-3 border border-gray-300 rounded-lg text-base mb-3';
+
+  const addBtn = document.createElement('button');
+  addBtn.id = 'add-to-cart';
+  addBtn.className =
+    'w-full py-3 bg-black text-white text-sm font-medium uppercase tracking-wider hover:bg-gray-800 transition-all';
+  addBtn.innerHTML = 'Add to Cart';
+
+  const stockInfo = document.createElement('div');
+  stockInfo.id = 'stock-status';
+  stockInfo.className = 'text-xs text-red-500 mt-3 whitespace-pre-line';
+
+  selectorContainer.appendChild(selectElement);
+  selectorContainer.appendChild(addBtn);
+  selectorContainer.appendChild(stockInfo);
+  leftColumn.appendChild(selectorContainer);
+
+  const cartDisp = document.createElement('div');
+  cartDisp.id = 'cart-items';
+  leftColumn.appendChild(cartDisp);
+
+  let totalAmt = 0;
+  let itemCnt = 0;
+  let lastSel = null;
+  let bonusPts = 0;
+
+  const sum = document.querySelector('#cart-total');
+
+  const manualToggle = document.createElement('button');
   manualToggle.className =
     'fixed top-4 right-4 bg-black text-white p-3 rounded-full hover:bg-gray-900 transition-colors z-50';
   manualToggle.innerHTML = `
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-    </svg>
-  `;
-  manualOverlay = document.createElement('div');
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+  </svg>
+`;
+
+  const manualOverlay = document.createElement('div');
   manualOverlay.className = 'fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300';
-  manualOverlay.onclick = function (e) {
-    if (e.target === manualOverlay) {
-      manualOverlay.classList.add('hidden');
-      manualColumn.classList.add('translate-x-full');
-    }
-  };
-  manualColumn = document.createElement('div');
+
+  const manualColumn = document.createElement('div');
   manualColumn.className =
     'fixed right-0 top-0 h-full w-80 bg-white shadow-2xl p-6 overflow-y-auto z-50 transform translate-x-full transition-transform duration-300';
   manualColumn.innerHTML = `
@@ -221,6 +211,21 @@ function main() {
       </p>
     </div>
   `;
+
+  manualToggle.onclick = function () {
+    manualOverlay.classList.toggle('hidden');
+    manualColumn.classList.toggle('translate-x-full');
+  };
+
+  manualOverlay.onclick = function (e) {
+    if (e.target === manualOverlay) {
+      manualOverlay.classList.add('hidden');
+      manualColumn.classList.add('translate-x-full');
+    }
+  };
+
+  const lightningDelay = 30000;
+
   gridContainer.appendChild(leftColumn);
   gridContainer.appendChild(rightColumn);
   manualOverlay.appendChild(manualColumn);
@@ -228,17 +233,18 @@ function main() {
   root.appendChild(gridContainer);
   root.appendChild(manualToggle);
   root.appendChild(manualOverlay);
+
   let initStock = 0;
-  for (let i = 0; i < prodList.length; i++) {
-    initStock += prodList[i].q;
+  for (let i = 0; i < PRODUCT_LIST.length; i++) {
+    initStock += PRODUCT_LIST[i].q;
   }
   onUpdateSelectOptions();
   handleCalculateCartStuff();
-  lightningDelay = Math.random() * 10000;
+
   setTimeout(() => {
     setInterval(function () {
-      const luckyIdx = Math.floor(Math.random() * prodList.length);
-      const luckyItem = prodList[luckyIdx];
+      const luckyIdx = Math.floor(Math.random() * PRODUCT_LIST.length);
+      const luckyItem = PRODUCT_LIST[luckyIdx];
       if (luckyItem.q > 0 && !luckyItem.onSale) {
         luckyItem.val = Math.round((luckyItem.originalVal * 80) / 100);
         luckyItem.onSale = true;
@@ -254,11 +260,11 @@ function main() {
       }
       if (lastSel) {
         let suggest = null;
-        for (let k = 0; k < prodList.length; k++) {
-          if (prodList[k].id !== lastSel) {
-            if (prodList[k].q > 0) {
-              if (!prodList[k].suggestSale) {
-                suggest = prodList[k];
+        for (let k = 0; k < PRODUCT_LIST.length; k++) {
+          if (PRODUCT_LIST[k].id !== lastSel) {
+            if (PRODUCT_LIST[k].q > 0) {
+              if (!PRODUCT_LIST[k].suggestSale) {
+                suggest = PRODUCT_LIST[k];
                 break;
               }
             }
@@ -275,20 +281,22 @@ function main() {
     }, 60000);
   }, Math.random() * 20000);
 }
+
 let sum;
+
 function onUpdateSelectOptions() {
   let totalStock;
   let opt;
   let discountText;
   sel.innerHTML = '';
   totalStock = 0;
-  for (let idx = 0; idx < prodList.length; idx++) {
-    const _p = prodList[idx];
+  for (let idx = 0; idx < PRODUCT_LIST.length; idx++) {
+    const _p = PRODUCT_LIST[idx];
     totalStock = totalStock + _p.q;
   }
-  for (var i = 0; i < prodList.length; i++) {
+  for (var i = 0; i < PRODUCT_LIST.length; i++) {
     (function () {
-      const item = prodList[i];
+      const item = PRODUCT_LIST[i];
       opt = document.createElement('option');
       opt.value = item.id;
       discountText = '';
@@ -353,17 +361,17 @@ function handleCalculateCartStuff() {
   bulkDisc = subTot;
   itemDiscounts = [];
   lowStockItems = [];
-  for (idx = 0; idx < prodList.length; idx++) {
-    if (prodList[idx].q < 5 && prodList[idx].q > 0) {
-      lowStockItems.push(prodList[idx].name);
+  for (idx = 0; idx < PRODUCT_LIST.length; idx++) {
+    if (PRODUCT_LIST[idx].q < 5 && PRODUCT_LIST[idx].q > 0) {
+      lowStockItems.push(PRODUCT_LIST[idx].name);
     }
   }
   for (let i = 0; i < cartItems.length; i++) {
     (function () {
       let curItem;
-      for (let j = 0; j < prodList.length; j++) {
-        if (prodList[j].id === cartItems[i].id) {
-          curItem = prodList[j];
+      for (let j = 0; j < PRODUCT_LIST.length; j++) {
+        if (PRODUCT_LIST[j].id === cartItems[i].id) {
+          curItem = PRODUCT_LIST[j];
           break;
         }
       }
@@ -384,19 +392,19 @@ function handleCalculateCartStuff() {
         }
       });
       if (q >= 10) {
-        if (curItem.id === PRODUCT_ONE) {
+        if (curItem.id === PRODUCT_IDS.KEYBOARD) {
           disc = 10 / 100;
         } else {
-          if (curItem.id === p2) {
+          if (curItem.id === PRODUCT_IDS.MOUSE) {
             disc = 15 / 100;
           } else {
-            if (curItem.id === product_3) {
+            if (curItem.id === PRODUCT_IDS.MONITOR_ARM) {
               disc = 20 / 100;
             } else {
-              if (curItem.id === p4) {
+              if (curItem.id === PRODUCT_IDS.POUCH) {
                 disc = 5 / 100;
               } else {
-                if (curItem.id === PRODUCT_5) {
+                if (curItem.id === PRODUCT_IDS.SPEAKER) {
                   disc = 25 / 100;
                 }
               }
@@ -438,9 +446,9 @@ function handleCalculateCartStuff() {
   if (subTot > 0) {
     for (let i = 0; i < cartItems.length; i++) {
       var curItem;
-      for (let j = 0; j < prodList.length; j++) {
-        if (prodList[j].id === cartItems[i].id) {
-          curItem = prodList[j];
+      for (let j = 0; j < PRODUCT_LIST.length; j++) {
+        if (PRODUCT_LIST[j].id === cartItems[i].id) {
+          curItem = PRODUCT_LIST[j];
           break;
         }
       }
@@ -533,8 +541,8 @@ function handleCalculateCartStuff() {
     }
   }
   stockMsg = '';
-  for (let stockIdx = 0; stockIdx < prodList.length; stockIdx++) {
-    const item = prodList[stockIdx];
+  for (let stockIdx = 0; stockIdx < PRODUCT_LIST.length; stockIdx++) {
+    const item = PRODUCT_LIST[stockIdx];
     if (item.q < 5) {
       if (item.q > 0) {
         stockMsg = `${stockMsg + item.name}: 재고 부족 (${item.q}개 남음)\n`;
@@ -578,18 +586,18 @@ var doRenderBonusPoints = function () {
   nodes = cartDisp.children;
   for (const node of nodes) {
     let product = null;
-    for (let pIdx = 0; pIdx < prodList.length; pIdx++) {
-      if (prodList[pIdx].id === node.id) {
-        product = prodList[pIdx];
+    for (let pIdx = 0; pIdx < PRODUCT_LIST.length; pIdx++) {
+      if (PRODUCT_LIST[pIdx].id === node.id) {
+        product = PRODUCT_LIST[pIdx];
         break;
       }
     }
     if (!product) continue;
-    if (product.id === PRODUCT_ONE) {
+    if (product.id === PRODUCT_IDS.KEYBOARD) {
       hasKeyboard = true;
-    } else if (product.id === p2) {
+    } else if (product.id === PRODUCT_IDS.MOUSE) {
       hasMouse = true;
-    } else if (product.id === product_3) {
+    } else if (product.id === PRODUCT_IDS.MONITOR_ARM) {
       hasMonitorArm = true;
     }
   }
@@ -634,8 +642,8 @@ function onGetStockTotal() {
   let i;
   let currentProduct;
   sum = 0;
-  for (i = 0; i < prodList.length; i++) {
-    currentProduct = prodList[i];
+  for (i = 0; i < PRODUCT_LIST.length; i++) {
+    currentProduct = PRODUCT_LIST[i];
     sum += currentProduct.q;
   }
   return sum;
@@ -648,7 +656,7 @@ var handleStockInfoUpdate = function () {
   totalStock = onGetStockTotal();
   if (totalStock < 30) {
   }
-  prodList.forEach(function (item) {
+  PRODUCT_LIST.forEach(function (item) {
     if (item.q < 5) {
       if (item.q > 0) {
         infoMsg = `${infoMsg + item.name}: 재고 부족 (${item.q}개 남음)\n`;
@@ -676,9 +684,9 @@ function doUpdatePricesInCart() {
   for (let i = 0; i < cartItems.length; i++) {
     const itemId = cartItems[i].id;
     let product = null;
-    for (let productIdx = 0; productIdx < prodList.length; productIdx++) {
-      if (prodList[productIdx].id === itemId) {
-        product = prodList[productIdx];
+    for (let productIdx = 0; productIdx < PRODUCT_LIST.length; productIdx++) {
+      if (PRODUCT_LIST[productIdx].id === itemId) {
+        product = PRODUCT_LIST[productIdx];
         break;
       }
     }
@@ -706,8 +714,8 @@ main();
 addBtn.addEventListener('click', function () {
   const selItem = sel.value;
   let hasItem = false;
-  for (let idx = 0; idx < prodList.length; idx++) {
-    if (prodList[idx].id === selItem) {
+  for (let idx = 0; idx < PRODUCT_LIST.length; idx++) {
+    if (PRODUCT_LIST[idx].id === selItem) {
       hasItem = true;
       break;
     }
@@ -716,9 +724,9 @@ addBtn.addEventListener('click', function () {
     return;
   }
   let itemToAdd = null;
-  for (let j = 0; j < prodList.length; j++) {
-    if (prodList[j].id === selItem) {
-      itemToAdd = prodList[j];
+  for (let j = 0; j < PRODUCT_LIST.length; j++) {
+    if (PRODUCT_LIST[j].id === selItem) {
+      itemToAdd = PRODUCT_LIST[j];
       break;
     }
   }
@@ -770,9 +778,9 @@ cartDisp.addEventListener('click', function (event) {
     const prodId = tgt.dataset.productId;
     const itemElem = document.getElementById(prodId);
     let prod = null;
-    for (let prdIdx = 0; prdIdx < prodList.length; prdIdx++) {
-      if (prodList[prdIdx].id === prodId) {
-        prod = prodList[prdIdx];
+    for (let prdIdx = 0; prdIdx < PRODUCT_LIST.length; prdIdx++) {
+      if (PRODUCT_LIST[prdIdx].id === prodId) {
+        prod = PRODUCT_LIST[prdIdx];
         break;
       }
     }
