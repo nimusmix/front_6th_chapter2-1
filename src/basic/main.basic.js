@@ -289,54 +289,48 @@ function main() {
   startRecommendationInterval();
 }
 
-let sum;
-
 function onUpdateSelectOptions() {
-  let totalStock;
-  let opt;
-  let discountText;
-  const sel = document.getElementById('product-select');
-  sel.innerHTML = '';
-  totalStock = 0;
-  for (let idx = 0; idx < PRODUCT_LIST.length; idx++) {
-    const _p = PRODUCT_LIST[idx];
-    totalStock = totalStock + _p.quantity;
-  }
-  for (var i = 0; i < PRODUCT_LIST.length; i++) {
+  const productSelectElement = document.getElementById('product-select');
+  productSelectElement.innerHTML = '';
+
+  const totalStock = PRODUCT_LIST.reduce((total, product) => total + product.quantity, 0);
+
+  for (let i = 0; i < PRODUCT_LIST.length; i++) {
     (function () {
       const item = PRODUCT_LIST[i];
-      opt = document.createElement('option');
-      opt.value = item.id;
-      discountText = '';
-      if (item.isOnSale) discountText += ' ⚡SALE';
-      if (item.isRecommended) discountText += ' 💝추천';
+      const optionElement = document.createElement('option');
+      optionElement.value = item.id;
+      let discoundBadgeText = '';
+      if (item.isOnSale) discoundBadgeText += ' ⚡SALE';
+      if (item.isRecommended) discoundBadgeText += ' 💝추천';
       if (item.quantity === 0) {
-        opt.textContent = `${item.name} - ${item.price}원 (품절)${discountText}`;
-        opt.disabled = true;
-        opt.className = 'text-gray-400';
+        optionElement.textContent = `${item.name} - ${item.price}원 (품절)${discoundBadgeText}`;
+        optionElement.disabled = true;
+        optionElement.className = 'text-gray-400';
       } else {
         if (item.isOnSale && item.isRecommended) {
-          opt.textContent = `⚡💝${item.name} - ${item.originalPrice}원 → ${
+          optionElement.textContent = `⚡💝${item.name} - ${item.originalPrice}원 → ${
             item.price
           }원 (25% SUPER SALE!)`;
-          opt.className = 'text-purple-600 font-bold';
+          optionElement.className = 'text-purple-600 font-bold';
         } else if (item.isOnSale) {
-          opt.textContent = `⚡${item.name} - ${item.originalPrice}원 → ${item.price}원 (20% SALE!)`;
-          opt.className = 'text-red-500 font-bold';
+          optionElement.textContent = `⚡${item.name} - ${item.originalPrice}원 → ${item.price}원 (20% SALE!)`;
+          optionElement.className = 'text-red-500 font-bold';
         } else if (item.isRecommended) {
-          opt.textContent = `💝${item.name} - ${item.originalPrice}원 → ${item.price}원 (5% 추천할인!)`;
-          opt.className = 'text-blue-500 font-bold';
+          optionElement.textContent = `💝${item.name} - ${item.originalPrice}원 → ${item.price}원 (5% 추천할인!)`;
+          optionElement.className = 'text-blue-500 font-bold';
         } else {
-          opt.textContent = `${item.name} - ${item.price}원${discountText}`;
+          optionElement.textContent = `${item.name} - ${item.price}원${discoundBadgeText}`;
         }
       }
-      sel.appendChild(opt);
+      productSelectElement.appendChild(optionElement);
     })();
   }
+
   if (totalStock < 50) {
-    sel.style.borderColor = 'orange';
+    productSelectElement.style.borderColor = 'orange';
   } else {
-    sel.style.borderColor = '';
+    productSelectElement.style.borderColor = '';
   }
 }
 
@@ -564,6 +558,7 @@ function handleCalculateCartStuff() {
   handlestockStatusElementUpdate();
   doRenderBonusPoints();
 }
+
 var doRenderBonusPoints = function () {
   let basePoints;
   let finalPoints;
@@ -646,6 +641,7 @@ var doRenderBonusPoints = function () {
     }
   }
 };
+
 function onGetStockTotal() {
   let sum;
   let i;
@@ -657,6 +653,7 @@ function onGetStockTotal() {
   }
   return sum;
 }
+
 var handlestockStatusElementUpdate = function () {
   let infoMsg;
   let totalStock;
@@ -676,6 +673,7 @@ var handlestockStatusElementUpdate = function () {
   });
   stockStatusElement.textContent = infoMsg;
 };
+
 function doUpdatePricesInCart() {
   let totalCount = 0,
     j = 0;
@@ -721,7 +719,9 @@ function doUpdatePricesInCart() {
   }
   handleCalculateCartStuff();
 }
+
 main();
+
 addToCartButton.addEventListener('click', function () {
   const selItem = sel.value;
   let hasItem = false;
