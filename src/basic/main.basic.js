@@ -284,7 +284,7 @@ function main() {
     setTimeout(() => {
       setInterval(() => {
         if (!lastSelectedProductId) return;
-        if (cartItemsContainer.children.length > 0) return;
+        if (cartItemsContainer.childNodes.length > 0) return;
 
         const product = findRecommendedProduct(lastSelectedProductId);
         if (product) {
@@ -339,13 +339,14 @@ function onUpdateSelectOptions() {
 }
 
 function handleCalculateCartStuff() {
-  const cartElements = cartItemsContainer.children;
+  const cartItemsContainer = document.getElementById('cart-items');
+  const cartElements = cartItemsContainer.childNodes;
   let totalItemCount = 0;
   let totalAmountBeforeDiscount = 0;
   let totalAmountAfterDiscount = 0;
   const itemDiscounts = [];
 
-  cartElements.forEach((cartEl) => {
+  cartElements?.forEach((cartEl) => {
     const product = PRODUCT_LIST.find((p) => p.id === cartEl.id);
     if (!product) return;
 
@@ -523,7 +524,8 @@ var doRenderBonusPoints = function () {
   let hasMouse;
   let hasMonitorArm;
   let nodes;
-  if (cartItemsContainer.children.length === 0) {
+  const cartItemsContainer = document.getElementById('cart-items');
+  if (cartItemsContainer.childNodes.length === 0) {
     document.getElementById('loyalty-points').style.display = 'none';
     return;
   }
@@ -543,7 +545,7 @@ var doRenderBonusPoints = function () {
   hasKeyboard = false;
   hasMouse = false;
   hasMonitorArm = false;
-  nodes = cartItemsContainer.children;
+  nodes = cartItemsContainer.childNodes;
   for (const node of nodes) {
     let product = null;
     for (let pIdx = 0; pIdx < PRODUCT_LIST.length; pIdx++) {
@@ -635,18 +637,19 @@ function doUpdatePricesInCart() {
   let totalCount = 0,
     j = 0;
   let cartItems;
-  while (cartItemsContainer.children[j]) {
-    const qty = cartItemsContainer.children[j].querySelector('.quantity-number');
+  const cartItemsContainer = document.getElementById('cart-items');
+  while (cartItemsContainer.childNodes[j]) {
+    const qty = cartItemsContainer.childNodes[j].querySelector('.quantity-number');
     totalCount += qty ? parseInt(qty.textContent) : 0;
     j++;
   }
   totalCount = 0;
-  for (j = 0; j < cartItemsContainer.children.length; j++) {
+  for (j = 0; j < cartItemsContainer.childNodes.length; j++) {
     totalCount += parseInt(
-      cartItemsContainer.children[j].querySelector('.quantity-number').textContent,
+      cartItemsContainer.childNodes[j].querySelector('.quantity-number').textContent,
     );
   }
-  cartItems = cartItemsContainer.children;
+  cartItems = cartItemsContainer.childNodes;
   for (let i = 0; i < cartItems.length; i++) {
     const itemId = cartItems[i].id;
     let product = null;
