@@ -231,7 +231,7 @@ function main() {
 
   let initStock = 0;
   for (let i = 0; i < PRODUCT_LIST.length; i++) {
-    initStock += PRODUCT_LIST[i].q;
+    initStock += PRODUCT_LIST[i].quantity;
   }
   onUpdateSelectOptions();
   handleCalculateCartStuff();
@@ -257,7 +257,7 @@ function main() {
         let suggest = null;
         for (let k = 0; k < PRODUCT_LIST.length; k++) {
           if (PRODUCT_LIST[k].id !== lastSel) {
-            if (PRODUCT_LIST[k].q > 0) {
+            if (PRODUCT_LIST[k].quantity > 0) {
               if (!PRODUCT_LIST[k].isRecommended) {
                 suggest = PRODUCT_LIST[k];
                 break;
