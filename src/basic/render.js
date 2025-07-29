@@ -1,4 +1,21 @@
-export const renderHeader = () => {
+export const renderAppLayout = () => {
+  const root = document.getElementById('app');
+
+  const header = renderHeader();
+  const { gridContainer, leftColumn } = renderRootLayout();
+  const selectorBlock = renderSelectorBlock();
+  const cartItemsBlock = renderCartItemsBlock();
+  const manualGuideBlock = renderManualGuideBlock();
+
+  leftColumn.appendChild(selectorBlock);
+  leftColumn.appendChild(cartItemsBlock);
+  root.appendChild(header);
+  root.appendChild(gridContainer);
+  root.appendChild(manualGuideBlock.toggleButton);
+  root.appendChild(manualGuideBlock.overlay);
+};
+
+const renderHeader = () => {
   const header = document.createElement('div');
   header.className = 'mb-8';
   header.innerHTML = `
@@ -9,7 +26,7 @@ export const renderHeader = () => {
   return header;
 };
 
-export const renderRootLayout = () => {
+const renderRootLayout = () => {
   const gridContainer = document.createElement('div');
   gridContainer.className =
     'grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 flex-1 overflow-hidden';
@@ -55,7 +72,7 @@ export const renderRootLayout = () => {
   return { gridContainer, leftColumn, rightColumn };
 };
 
-export const renderSelectorBlock = () => {
+const renderSelectorBlock = () => {
   const selectorContainer = document.createElement('div');
   selectorContainer.className = 'mb-6 pb-6 border-b border-gray-200';
 
@@ -80,13 +97,13 @@ export const renderSelectorBlock = () => {
   return selectorContainer;
 };
 
-export const renderCartItemsBlock = () => {
+const renderCartItemsBlock = () => {
   const container = document.createElement('div');
   container.id = 'cart-items';
   return container;
 };
 
-export const renderManualGuideBlock = () => {
+const renderManualGuideBlock = () => {
   const toggleButton = document.createElement('button');
   toggleButton.className =
     'fixed top-4 right-4 bg-black text-white p-3 rounded-full hover:bg-gray-900 transition-colors z-50';

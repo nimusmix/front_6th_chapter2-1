@@ -1,29 +1,9 @@
 import { getIsTuesday } from './utils/date';
 import { PRODUCT_LIST, PRODUCT_IDS } from './constants/product';
-import {
-  renderCartItemsBlock,
-  renderHeader,
-  renderManualGuideBlock,
-  renderRootLayout,
-  renderSelectorBlock,
-} from './render';
+import { renderAppLayout } from './render';
 
 function main() {
-  const root = document.getElementById('app');
-  const header = renderHeader();
-  const { gridContainer, leftColumn } = renderRootLayout();
-
-  const selectorBlock = renderSelectorBlock();
-  leftColumn.appendChild(selectorBlock);
-  const cartItemsBlock = renderCartItemsBlock();
-  leftColumn.appendChild(cartItemsBlock);
-
-  const manualGuideBlock = renderManualGuideBlock();
-
-  root.appendChild(header);
-  root.appendChild(gridContainer);
-  root.appendChild(manualGuideBlock.toggleButton);
-  root.appendChild(manualGuideBlock.overlay);
+  renderAppLayout();
 
   onUpdateSelectOptions();
   handleCalculateCartStuff();
