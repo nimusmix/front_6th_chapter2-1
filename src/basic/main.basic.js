@@ -342,7 +342,7 @@ function onUpdateSelectOptions() {
 
 function handleCalculateCartStuff() {
   const cartItemsContainer = document.getElementById('cart-items');
-  const cartElements = cartItemsContainer.children;
+  const cartElements = Array.from(cartItemsContainer.children);
   let totalItemCount = 0;
   let totalAmountBeforeDiscount = 0;
   let totalAmountAfterDiscount = 0;
@@ -544,7 +544,7 @@ const renderBonusPoints = () => {
   let hasMouse = false;
   let hasMonitorArm = false;
 
-  const nodes = cartItemsContainer.children;
+  const nodes = Array.from(cartItemsContainer.children);
   for (const node of nodes) {
     const product = PRODUCT_LIST.find((p) => p.id === node.id);
     if (!product) continue;
@@ -611,48 +611,44 @@ const handleStockStatusElementUpdate = () => {
 
 const updatePricesInCart = () => {
   const cartItemsContainer = document.getElementById('cart-items');
-  let totalCount = 0,
-    j = 0;
-  let cartItems;
-  while (cartItemsContainer.children[j]) {
-    const qty = cartItemsContainer.children[j].querySelector('.quantity-number');
-    totalCount += qty ? parseInt(qty.textContent) : 0;
-    j++;
-  }
-  totalCount = 0;
-  for (j = 0; j < cartItemsContainer.children.length; j++) {
-    totalCount += parseInt(
-      cartItemsContainer.children[j].querySelector('.quantity-number').textContent,
-    );
-  }
-  cartItems = cartItemsContainer.children;
-  for (let i = 0; i < cartItems.length; i++) {
-    const itemId = cartItems[i].id;
-    let product = null;
-    for (let productIdx = 0; productIdx < PRODUCT_LIST.length; productIdx++) {
-      if (PRODUCT_LIST[productIdx].id === itemId) {
-        product = PRODUCT_LIST[productIdx];
-        break;
-      }
+  const cartItemElements = Array.from(cartItemsContainer.children);
+
+  let totalCount = 0;
+  for (const cartItemElement of cartItemElements) {
+    const itemId = cartItemElement.id;
+    const product = PRODUCT_LIST.find((p) => p.id === itemId);
+    if (!product) continue;
+
+    const qtyEl = cartItemElement.querySelector('.quantity-number');
+    const qty = qtyEl ? parseInt(qtyEl.textContent, 10) : 0;
+    totalCount += qty;
+
+    const priceDiv = cartItemElement.querySelector('.text-lg');
+    const nameDiv = cartItemElement.querySelector('h3');
+
+    if (!priceDiv || !nameDiv) continue;
+
+    const formattedPrice = `₩${product.price.toLocaleString()}`;
+    const formattedOriginal = `₩${product.originalPrice.toLocaleString()}`;
+
+    let namePrefix = '';
+    let priceHtml = formattedPrice;
+
+    if (product.isOnSale && product.isRecommended) {
+      namePrefix = '⚡💝';
+      priceHtml = `<span class="line-through text-gray-400">${formattedOriginal}</span> <span class="text-purple-600">${formattedPrice}</span>`;
+    } else if (product.isOnSale) {
+      namePrefix = '⚡';
+      priceHtml = `<span class="line-through text-gray-400">${formattedOriginal}</span> <span class="text-red-500">${formattedPrice}</span>`;
+    } else if (product.isRecommended) {
+      namePrefix = '💝';
+      priceHtml = `<span class="line-through text-gray-400">${formattedOriginal}</span> <span class="text-blue-500">${formattedPrice}</span>`;
     }
-    if (product) {
-      const priceDiv = cartItems[i].querySelector('.text-lg');
-      const nameDiv = cartItems[i].querySelector('h3');
-      if (product.isOnSale && product.isRecommended) {
-        priceDiv.innerHTML = `<span class="line-through text-gray-400">₩${product.originalPrice.toLocaleString()}</span> <span class="text-purple-600">₩${product.price.toLocaleString()}</span>`;
-        nameDiv.textContent = `⚡💝${product.name}`;
-      } else if (product.isOnSale) {
-        priceDiv.innerHTML = `<span class="line-through text-gray-400">₩${product.originalPrice.toLocaleString()}</span> <span class="text-red-500">₩${product.price.toLocaleString()}</span>`;
-        nameDiv.textContent = `⚡${product.name}`;
-      } else if (product.isRecommended) {
-        priceDiv.innerHTML = `<span class="line-through text-gray-400">₩${product.originalPrice.toLocaleString()}</span> <span class="text-blue-500">₩${product.price.toLocaleString()}</span>`;
-        nameDiv.textContent = `💝${product.name}`;
-      } else {
-        priceDiv.textContent = `₩${product.price.toLocaleString()}`;
-        nameDiv.textContent = product.name;
-      }
-    }
+
+    nameDiv.textContent = `${namePrefix}${product.name}`;
+    priceDiv.innerHTML = priceHtml;
   }
+
   handleCalculateCartStuff();
 };
 
