@@ -193,3 +193,43 @@ const renderManualGuideBlock = () => {
   overlay.appendChild(sidebar);
   return { toggleButton, overlay };
 };
+
+export const renderProductSelectOptions = (productList) => {
+  const productSelectElement = document.getElementById('product-select');
+  productSelectElement.innerHTML = '';
+
+  const totalStock = productList.reduce((sum, p) => sum + p.quantity, 0);
+
+  productList.forEach((product) => {
+    const option = createProductOption(product);
+    productSelectElement.appendChild(option);
+  });
+
+  productSelectElement.style.borderColor = totalStock < 50 ? 'orange' : '';
+};
+
+const createProductOption = (product) => {
+  const option = document.createElement('option');
+  option.value = product.id;
+
+  const badge = product.isOnSale ? ' ⚡SALE' : product.isRecommended ? ' 💝추천' : '';
+
+  if (product.quantity === 0) {
+    option.textContent = `${product.name} - ${product.price}원 (품절)${badge}`;
+    option.disabled = true;
+    option.className = 'text-gray-400';
+  } else if (product.isOnSale && product.isRecommended) {
+    option.textContent = `⚡💝${product.name} - ${product.originalPrice}원 → ${product.price}원 (25% SUPER SALE!)`;
+    option.className = 'text-purple-600 font-bold';
+  } else if (product.isOnSale) {
+    option.textContent = `⚡${product.name} - ${product.originalPrice}원 → ${product.price}원 (20% SALE!)`;
+    option.className = 'text-red-500 font-bold';
+  } else if (product.isRecommended) {
+    option.textContent = `💝${product.name} - ${product.originalPrice}원 → ${product.price}원 (5% 추천할인!)`;
+    option.className = 'text-blue-500 font-bold';
+  } else {
+    option.textContent = `${product.name} - ${product.price}원${badge}`;
+  }
+
+  return option;
+};

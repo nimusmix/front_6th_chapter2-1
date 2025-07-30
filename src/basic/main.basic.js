@@ -1,6 +1,6 @@
 import { getIsTuesday } from './utils/date';
 import { PRODUCT_IDS } from './constants/product';
-import { renderAppLayout } from './render';
+import { renderAppLayout, renderProductSelectOptions } from './render';
 import { setupIntervalEvent } from './utils/intervalEvent';
 import { findRecommendedProduct, getLightningSaleProduct } from './utils/product';
 
@@ -56,7 +56,7 @@ let lastSelectedProductId = null;
 function main() {
   renderAppLayout();
 
-  onUpdateSelectOptions();
+  renderProductSelectOptions(productList);
   handleCalculateCartStuff();
 
   setupLightningSale();
@@ -72,7 +72,7 @@ function setupLightningSale() {
     product.isOnSale = true;
 
     alert(`⚡번개세일! ${product.name}이(가) 20% 할인 중입니다!`);
-    onUpdateSelectOptions();
+    renderProductSelectOptions(productList);
     updatePricesInCart();
   };
 
@@ -92,7 +92,7 @@ function setupRecommendationSale() {
     product.isRecommended = true;
 
     alert(`💝 ${product.name}은(는) 어떠세요? 지금 구매하시면 5% 추가 할인!`);
-    onUpdateSelectOptions();
+    renderProductSelectOptions(productList);
     updatePricesInCart();
   };
 
@@ -101,47 +101,6 @@ function setupRecommendationSale() {
     interval: 60000,
     action: applyRecommendationDiscount,
   });
-}
-
-function onUpdateSelectOptions() {
-  const productSelectElement = document.getElementById('product-select');
-  productSelectElement.innerHTML = '';
-
-  const totalStock = productList.reduce((total, product) => total + product.quantity, 0);
-
-  for (let i = 0; i < productList.length; i++) {
-    const item = productList[i];
-
-    const optionElement = document.createElement('option');
-    optionElement.value = item.id;
-
-    const discountBadgeText = item.isOnSale ? ' ⚡SALE' : item.isRecommended ? ' 💝추천' : '';
-
-    if (item.quantity === 0) {
-      optionElement.textContent = `${item.name} - ${item.price}원 (품절)${discountBadgeText}`;
-      optionElement.disabled = true;
-      optionElement.className = 'text-gray-400';
-    } else if (item.isOnSale && item.isRecommended) {
-      optionElement.textContent = `⚡💝${item.name} - ${item.originalPrice}원 → ${item.price}원 (25% SUPER SALE!)`;
-      optionElement.className = 'text-purple-600 font-bold';
-    } else if (item.isOnSale) {
-      optionElement.textContent = `⚡${item.name} - ${item.originalPrice}원 → ${item.price}원 (20% SALE!)`;
-      optionElement.className = 'text-red-500 font-bold';
-    } else if (item.isRecommended) {
-      optionElement.textContent = `💝${item.name} - ${item.originalPrice}원 → ${item.price}원 (5% 추천할인!)`;
-      optionElement.className = 'text-blue-500 font-bold';
-    } else {
-      optionElement.textContent = `${item.name} - ${item.price}원${discountBadgeText}`;
-    }
-
-    productSelectElement.appendChild(optionElement);
-  }
-
-  if (totalStock < 50) {
-    productSelectElement.style.borderColor = 'orange';
-  } else {
-    productSelectElement.style.borderColor = '';
-  }
 }
 
 function handleCalculateCartStuff() {
@@ -564,6 +523,6 @@ cartItemsContainer.addEventListener('click', function (event) {
     if (prod && prod.quantity < 5) {
     }
     handleCalculateCartStuff();
-    onUpdateSelectOptions();
+    renderProductSelectOptions(productList);
   }
 });
