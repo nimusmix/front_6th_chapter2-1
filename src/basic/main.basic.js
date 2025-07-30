@@ -208,8 +208,6 @@ const handleAddToCartClick = () => {
   selectedProductId = selectedProduct.id;
 };
 
-main();
-
 function handleCartItemClick(event) {
   const target = event.target;
   const isQuantityChange = target.classList.contains('quantity-change');
@@ -231,3 +229,5 @@ function handleCartItemClick(event) {
   updateCartState();
   renderProductSelectOptions(productList);
 }
+
+main();
