@@ -177,8 +177,8 @@ const updatePricesInCart = () => {
     const product = getProductById(productList, cartElement.id);
     if (!product) continue;
 
-    const priceDiv = cartElements.querySelector('.text-lg');
-    const nameDiv = cartElements.querySelector('h3');
+    const priceDiv = cartElement.querySelector('.text-lg');
+    const nameDiv = cartElement.querySelector('h3');
     if (!priceDiv || !nameDiv) continue;
 
     nameDiv.textContent = getProductNameWithBadge(product);

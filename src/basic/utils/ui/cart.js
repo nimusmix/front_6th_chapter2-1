@@ -124,7 +124,7 @@ const updateCartSummaryDetails = ({
 };
 
 const updateTotalPriceDisplay = (subTotalAfterDiscount) => {
-  const el = document.querySelector('#summary-details .text-2xl');
+  const el = document.querySelector('#cart-total .text-2xl');
   if (el) {
     el.textContent = formatPrice(Math.round(subTotalAfterDiscount));
   }
