@@ -22,7 +22,6 @@ import {
   removeProduct,
 } from './utils/cart';
 import { updateCartUI } from './utils/ui/cart';
-import { formatPrice } from './utils/price';
 
 const productList = [
   {
@@ -201,7 +200,8 @@ const handleAddToCartClick = () => {
   if (isInCart) {
     if (!incrementProductQuantityInCart(selectedProduct)) return;
   } else {
-    renderNewCartItem(selectedProduct);
+    const cartItemsContainer = document.getElementById('cart-items');
+    renderNewCartItem(selectedProduct, cartItemsContainer);
   }
 
   updateCartState();
@@ -209,46 +209,6 @@ const handleAddToCartClick = () => {
 };
 
 main();
-
-const cartItemsContainer = document.getElementById('cart-items');
-cartItemsContainer.addEventListener('click', function (event) {
-  const target = event.target;
-  if (target.classList.contains('quantity-change') || target.classList.contains('remove-item')) {
-    const productId = target.dataset.productId;
-    const productElement = document.getElementById(productId);
-    let prod = null;
-    for (let prdIdx = 0; prdIdx < productList.length; prdIdx++) {
-      if (productList[prdIdx].id === productId) {
-        prod = productList[prdIdx];
-        break;
-      }
-    }
-    if (target.classList.contains('quantity-change')) {
-      const qtyChange = parseInt(target.dataset.change);
-      var quantityElement = productElement.querySelector('.quantity-number');
-      const currentQty = parseInt(quantityElement.textContent);
-      const newQuantity = currentQty + qtyChange;
-      if (newQuantity > 0 && newQuantity <= prod.quantity + currentQty) {
-        quantityElement.textContent = newQuantity;
-        prod.quantity -= qtyChange;
-      } else if (newQuantity <= 0) {
-        prod.quantity += currentQty;
-        productElement.remove();
-      } else {
-        alert('재고가 부족합니다.');
-      }
-    } else if (target.classList.contains('remove-item')) {
-      var quantityElement = productElement.querySelector('.quantity-number');
-      const remQty = parseInt(quantityElement.textContent);
-      prod.quantity += remQty;
-      productElement.remove();
-    }
-    if (prod && prod.quantity < 5) {
-    }
-    updateCartState();
-    renderProductSelectOptions(productList);
-  }
-});
 
 function handleCartItemClick(event) {
   const target = event.target;
