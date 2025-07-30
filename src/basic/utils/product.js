@@ -18,3 +18,26 @@ export const findRecommendedProduct = (productList, excludeId) => {
 export const getTotalStock = (productList) => {
   return productList.reduce((sum, p) => sum + p.quantity, 0);
 };
+
+export const getProductNameWithBadge = (product) => {
+  let prefix = '';
+  if (product.isOnSale && product.isRecommended) prefix = '⚡💝';
+  else if (product.isOnSale) prefix = '⚡';
+  else if (product.isRecommended) prefix = '💝';
+  return `${prefix}${product.name}`;
+};
+
+const getProductPriceHTML = (product) => {
+  const price = `₩${product.price.toLocaleString()}`;
+  const original = `₩${product.originalPrice.toLocaleString()}`;
+
+  if (product.isOnSale && product.isRecommended) {
+    return `<span class="line-through text-gray-400">${original}</span> <span class="text-purple-600">${price}</span>`;
+  } else if (product.isOnSale) {
+    return `<span class="line-through text-gray-400">${original}</span> <span class="text-red-500">${price}</span>`;
+  } else if (product.isRecommended) {
+    return `<span class="line-through text-gray-400">${original}</span> <span class="text-blue-500">${price}</span>`;
+  }
+
+  return price;
+};

@@ -147,43 +147,18 @@ function updateCartState() {
 }
 
 const updatePricesInCart = () => {
-  const cartItemsContainer = document.getElementById('cart-items');
-  const cartItemElements = Array.from(cartItemsContainer.children);
+  const cartElements = getCartElements();
 
-  let totalCount = 0;
-  for (const cartItemElement of cartItemElements) {
-    const itemId = cartItemElement.id;
-    const product = productList.find((p) => p.id === itemId);
+  for (const cartElement of cartElements) {
+    const product = getProductById(cartElement.id);
     if (!product) continue;
 
-    const qtyEl = cartItemElement.querySelector('.quantity-number');
-    const qty = qtyEl ? parseInt(qtyEl.textContent, 10) : 0;
-    totalCount += qty;
-
-    const priceDiv = cartItemElement.querySelector('.text-lg');
-    const nameDiv = cartItemElement.querySelector('h3');
-
+    const priceDiv = cartElements.querySelector('.text-lg');
+    const nameDiv = cartElements.querySelector('h3');
     if (!priceDiv || !nameDiv) continue;
 
-    const formattedPrice = `₩${product.price.toLocaleString()}`;
-    const formattedOriginal = `₩${product.originalPrice.toLocaleString()}`;
-
-    let namePrefix = '';
-    let priceHtml = formattedPrice;
-
-    if (product.isOnSale && product.isRecommended) {
-      namePrefix = '⚡💝';
-      priceHtml = `<span class="line-through text-gray-400">${formattedOriginal}</span> <span class="text-purple-600">${formattedPrice}</span>`;
-    } else if (product.isOnSale) {
-      namePrefix = '⚡';
-      priceHtml = `<span class="line-through text-gray-400">${formattedOriginal}</span> <span class="text-red-500">${formattedPrice}</span>`;
-    } else if (product.isRecommended) {
-      namePrefix = '💝';
-      priceHtml = `<span class="line-through text-gray-400">${formattedOriginal}</span> <span class="text-blue-500">${formattedPrice}</span>`;
-    }
-
-    nameDiv.textContent = `${namePrefix}${product.name}`;
-    priceDiv.innerHTML = priceHtml;
+    nameDiv.textContent = getProductNameWithBadge(product);
+    priceDiv.innerHTML = getProductPriceHTML(product);
   }
 
   updateCartState();
