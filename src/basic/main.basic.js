@@ -78,14 +78,15 @@ function main() {
   renderProductSelectOptions(productList);
   updateCartState();
 
-  const addToCartButton = document.getElementById('add-to-cart');
-  addToCartButton.addEventListener('click', handleAddToCartClick);
-
-  const cartItemsContainer = document.getElementById('cart-items');
-  cartItemsContainer.addEventListener('click', handleCartItemClick);
+  bindEventListeners();
 
   setupLightningSale();
   setupRecommendationSale();
+}
+
+function bindEventListeners() {
+  document.getElementById('add-to-cart')?.addEventListener('click', handleAddToCartClick);
+  document.getElementById('cart-items')?.addEventListener('click', handleCartItemClick);
 }
 
 function setupLightningSale() {
