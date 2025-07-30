@@ -1,3 +1,5 @@
+import { getTotalStock } from './utils/product';
+
 export const renderAppLayout = () => {
   const root = document.getElementById('app');
 
@@ -198,7 +200,7 @@ export const renderProductSelectOptions = (productList) => {
   const productSelectElement = document.getElementById('product-select');
   productSelectElement.innerHTML = '';
 
-  const totalStock = productList.reduce((sum, p) => sum + p.quantity, 0);
+  const totalStock = getTotalStock(productList);
 
   productList.forEach((product) => {
     const option = createProductOption(product);
@@ -232,4 +234,13 @@ const createProductOption = (product) => {
   }
 
   return option;
+};
+
+export const updateCartItemBoldIfNeeded = (cartElement, quantity) => {
+  const priceElems = cartElement.querySelectorAll('.text-lg, .text-xs');
+  priceElems.forEach((elem) => {
+    if (elem.classList.contains('text-lg')) {
+      elem.style.fontWeight = quantity >= 10 ? 'bold' : 'normal';
+    }
+  });
 };

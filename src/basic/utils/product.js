@@ -14,3 +14,7 @@ export const findRecommendedProduct = (productList, excludeId) => {
     (product) => product.id !== excludeId && product.quantity > 0 && !product.isRecommended,
   );
 };
+
+export const getTotalStock = (productList) => {
+  return productList.reduce((sum, p) => sum + p.quantity, 0);
+};
