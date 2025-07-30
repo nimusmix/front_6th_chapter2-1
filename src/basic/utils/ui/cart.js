@@ -1,3 +1,5 @@
+import { formatPrice } from '../price';
+
 export const updateCartItemBoldIfNeeded = (cartElement, quantity) => {
   const priceElems = cartElement.querySelectorAll('.text-lg, .text-xs');
   priceElems.forEach((elem) => {
@@ -69,7 +71,7 @@ const updateCartSummaryDetails = ({
     fragments.push(`
         <div class="flex justify-between text-xs tracking-wide text-gray-400">
           <span>${product.name} x ${quantity}</span>
-          <span>₩${total.toLocaleString()}</span>
+          <span>${formatPrice(total)}</span>
         </div>
       `);
   });
@@ -78,7 +80,7 @@ const updateCartSummaryDetails = ({
       <div class="border-t border-white/10 my-3"></div>
       <div class="flex justify-between text-sm tracking-wide">
         <span>Subtotal</span>
-        <span>₩${subTotalBeforeDiscount.toLocaleString()}</span>
+        <span>${formatPrice(subTotalBeforeDiscount)}</span>
       </div>
     `);
 
@@ -122,7 +124,7 @@ const updateCartSummaryDetails = ({
 const updateTotalPriceDisplay = (subTotalAfterDiscount) => {
   const el = document.querySelector('#summary-details .text-2xl');
   if (el) {
-    el.textContent = `₩${Math.round(subTotalAfterDiscount).toLocaleString()}`;
+    el.textContent = formatPrice(Math.round(subTotalAfterDiscount));
   }
 };
 
@@ -146,7 +148,7 @@ const updateDiscountInfo = (discountRate, subTotalBefore, subTotalAfter) => {
           <span class="text-xs uppercase tracking-wide text-green-400">총 할인율</span>
           <span class="text-sm font-medium text-green-400">${(discountRate * 100).toFixed(1)}%</span>
         </div>
-        <div class="text-2xs text-gray-300">₩${Math.round(discountAmount).toLocaleString()} 할인되었습니다</div>
+        <div class="text-2xs text-gray-300">${formatPrice(Math.round(discountAmount))} 할인되었습니다</div>
       </div>
     `;
 };

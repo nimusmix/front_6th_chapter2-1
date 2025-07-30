@@ -2,9 +2,15 @@ import { getIsTuesday } from './utils/date';
 import { PRODUCT_IDS } from './constants/product';
 import { renderAppLayout, renderBonusPoints, renderProductSelectOptions } from './render';
 import { setupIntervalEvent } from './utils/intervalEvent';
-import { findRecommendedProduct, getLightningSaleProduct } from './utils/product';
+import {
+  findRecommendedProduct,
+  getLightningSaleProduct,
+  getProductNameWithBadge,
+  getProductPriceHTML,
+} from './utils/product';
 import { getCartElements } from './utils/cart';
 import { updateCartUI } from './utils/ui/cart';
+import { formatPrice } from './utils/price';
 
 const productList = [
   {
@@ -168,10 +174,6 @@ main();
 
 addToCartButton.addEventListener('click', (e) => {
   const selectedItemId = e.target.value;
-  console.log(selectedItemId);
-  console.log(selectedItemId);
-  console.log(selectedItemId);
-  console.log(selectedItemId);
 
   let hasItem = false;
   for (let idx = 0; idx < productList.length; idx++) {
@@ -213,7 +215,7 @@ addToCartButton.addEventListener('click', (e) => {
         <div>
           <h3 class="text-base font-normal mb-1 tracking-tight">${itemToAdd.isOnSale && itemToAdd.isRecommended ? '⚡💝' : itemToAdd.isOnSale ? '⚡' : itemToAdd.isRecommended ? '💝' : ''}${itemToAdd.name}</h3>
           <p class="text-xs text-gray-500 mb-0.5 tracking-wide">PRODUCT</p>
-          <p class="text-xs text-black mb-3">${itemToAdd.isOnSale || itemToAdd.isRecommended ? `<span class="line-through text-gray-400">₩${itemToAdd.originalPrice.toLocaleString()}</span> <span class="${itemToAdd.isOnSale && itemToAdd.isRecommended ? 'text-purple-600' : itemToAdd.isOnSale ? 'text-red-500' : 'text-blue-500'}">₩${itemToAdd.price.toLocaleString()}</span>` : `₩${itemToAdd.price.toLocaleString()}`}</p>
+          <p class="text-xs text-black mb-3">${itemToAdd.isOnSale || itemToAdd.isRecommended ? `<span class="line-through text-gray-400">${formatPrice(itemToAdd.originalPrice)}</span> <span class="${itemToAdd.isOnSale && itemToAdd.isRecommended ? 'text-purple-600' : itemToAdd.isOnSale ? 'text-red-500' : 'text-blue-500'}">${formatPrice(itemToAdd.price)}</span>` : `${formatPrice(itemToAdd.price)}`}</p>
           <div class="flex items-center gap-4">
             <button class="quantity-change w-6 h-6 border border-black bg-white text-sm flex items-center justify-center transition-all hover:bg-black hover:text-white" data-product-id="${itemToAdd.id}" data-change="-1">−</button>
             <span class="quantity-number text-sm font-normal min-w-[20px] text-center tabular-nums">1</span>
@@ -221,7 +223,7 @@ addToCartButton.addEventListener('click', (e) => {
           </div>
         </div>
         <div class="text-right">
-            <div class="text-lg mb-2 tracking-tight tabular-nums">${itemToAdd.isOnSale || itemToAdd.isRecommended ? `<span class="line-through text-gray-400">₩${itemToAdd.originalPrice.toLocaleString()}</span> <span class="${itemToAdd.isOnSale && itemToAdd.isRecommended ? 'text-purple-600' : itemToAdd.isOnSale ? 'text-red-500' : 'text-blue-500'}">₩${itemToAdd.price.toLocaleString()}</span>` : `₩${itemToAdd.price.toLocaleString()}`}</div>
+            <div class="text-lg mb-2 tracking-tight tabular-nums">${itemToAdd.isOnSale || itemToAdd.isRecommended ? `<span class="line-through text-gray-400">${formatPrice(itemToAdd.originalPrice)}</span> <span class="${itemToAdd.isOnSale && itemToAdd.isRecommended ? 'text-purple-600' : itemToAdd.isOnSale ? 'text-red-500' : 'text-blue-500'}">${formatPrice(itemToAdd.price)}</span>` : `${formatPrice(itemToAdd.price)}`}</div>
           <a class="remove-item text-2xs text-gray-500 uppercase tracking-wider cursor-pointer transition-colors border-b border-transparent hover:text-black hover:border-black" data-product-id="${itemToAdd.id}">Remove</a>
         </div>
       `;

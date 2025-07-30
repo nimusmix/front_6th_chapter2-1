@@ -1,3 +1,5 @@
+import { formatPrice } from './price';
+
 export const getLightningSaleProduct = (productList) => {
   const availableProducts = productList.filter(
     (product) => product.quantity > 0 && !product.isOnSale,
@@ -27,9 +29,9 @@ export const getProductNameWithBadge = (product) => {
   return `${prefix}${product.name}`;
 };
 
-const getProductPriceHTML = (product) => {
-  const price = `₩${product.price.toLocaleString()}`;
-  const original = `₩${product.originalPrice.toLocaleString()}`;
+export const getProductPriceHTML = (product) => {
+  const price = formatPrice(product.price);
+  const original = formatPrice(product.originalPrice);
 
   if (product.isOnSale && product.isRecommended) {
     return `<span class="line-through text-gray-400">${original}</span> <span class="text-purple-600">${price}</span>`;
