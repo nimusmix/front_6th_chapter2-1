@@ -1,5 +1,9 @@
 import { formatPrice } from './price';
 
+export const getProductById = (productList, id) => {
+  return productList.find((p) => p.id === id);
+};
+
 export const getLightningSaleProduct = (productList) => {
   const availableProducts = productList.filter(
     (product) => product.quantity > 0 && !product.isOnSale,

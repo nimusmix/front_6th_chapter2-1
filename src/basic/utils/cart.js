@@ -1,18 +1,19 @@
 import { PRODUCT_DISCOUNT_RATES_BY_PRODUCT_ID, PRODUCT_IDS } from '../constants/product';
+import { getProductById } from './product';
 
 export const getCartElements = () => {
   const cartItemsContainer = document.getElementById('cart-items');
   return Array.from(cartItemsContainer.children);
 };
 
-export const calculateCartTotals = (cartElements) => {
+export const calculateCartTotals = (cartElements, productList) => {
   let totalItemCount = 0;
   let subTotalBeforeDiscount = 0;
   let subTotalAfterDiscount = 0;
-  const appliedItemDiscounts = [];
+  const itemDiscounts = [];
 
   cartElements.forEach((cartElement) => {
-    const product = getProductById(cartElement.id);
+    const product = getProductById(productList, cartElement.id);
     if (!product) return;
 
     const quantity = parseInt(
@@ -27,7 +28,7 @@ export const calculateCartTotals = (cartElements) => {
     let itemDiscountRate = 0;
     if (quantity >= 10 && PRODUCT_DISCOUNT_RATES_BY_PRODUCT_ID[product.id]) {
       itemDiscountRate = PRODUCT_DISCOUNT_RATES_BY_PRODUCT_ID[product.id];
-      appliedItemDiscounts.push({ name: product.name, discount: itemDiscountRate * 100 });
+      itemDiscounts.push({ name: product.name, discount: itemDiscountRate * 100 });
     }
 
     subTotalAfterDiscount += itemSubtotal * (1 - itemDiscountRate);
@@ -37,6 +38,7 @@ export const calculateCartTotals = (cartElements) => {
     totalItemCount,
     subTotalBeforeDiscount,
     subTotalAfterDiscount,
+    itemDiscounts,
   };
 };
 
@@ -94,4 +96,45 @@ export const calculateBonusPoints = ({
   }
 
   return { finalPoints, pointsDetail };
+};
+
+export const incrementProductQuantityInCart = (product) => {
+  const productElement = document.getElementById(product.id);
+  if (!productElement) return false;
+
+  const quantityElement = productElement.querySelector('.quantity-number');
+  const currentQuantity = parseInt(quantityElement.textContent);
+  const newQuantity = currentQuantity + 1;
+
+  if (newQuantity <= product.quantity + currentQuantity) {
+    quantityElement.textContent = newQuantity;
+    product.quantity -= 1;
+    return true;
+  } else {
+    alert('재고가 부족합니다.');
+    return false;
+  }
+};
+
+export const changeProductQuantity = (product, productElement, change) => {
+  const quantityElement = productElement.querySelector('.quantity-number');
+  const currentQuantity = parseInt(quantityElement.textContent);
+  const newQuantity = currentQuantity + change;
+
+  if (newQuantity > 0 && newQuantity <= product.quantity + currentQuantity) {
+    quantityElement.textContent = newQuantity;
+    product.quantity -= change;
+  } else if (newQuantity <= 0) {
+    product.quantity += currentQuantity;
+    productElement.remove();
+  } else {
+    alert('재고가 부족합니다.');
+  }
+};
+
+export const removeProduct = (product, productElement) => {
+  const quantityElement = productElement.querySelector('.quantity-number');
+  const removedQuantity = parseInt(quantityElement.textContent);
+  product.quantity += removedQuantity;
+  productElement.remove();
 };

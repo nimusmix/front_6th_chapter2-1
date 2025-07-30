@@ -1,14 +1,26 @@
 import { getIsTuesday } from './utils/date';
 import { PRODUCT_IDS } from './constants/product';
-import { renderAppLayout, renderBonusPoints, renderProductSelectOptions } from './render';
+import {
+  renderAppLayout,
+  renderBonusPoints,
+  renderNewCartItem,
+  renderProductSelectOptions,
+} from './render';
 import { setupIntervalEvent } from './utils/intervalEvent';
 import {
   findRecommendedProduct,
   getLightningSaleProduct,
+  getProductById,
   getProductNameWithBadge,
   getProductPriceHTML,
 } from './utils/product';
-import { getCartElements } from './utils/cart';
+import {
+  calculateCartTotals,
+  changeProductQuantity,
+  getCartElements,
+  incrementProductQuantityInCart,
+  removeProduct,
+} from './utils/cart';
 import { updateCartUI } from './utils/ui/cart';
 import { formatPrice } from './utils/price';
 
@@ -59,13 +71,19 @@ const productList = [
     isRecommended: false,
   },
 ];
-let lastSelectedProductId = null;
+let selectedProductId = null;
 
 function main() {
   renderAppLayout();
 
   renderProductSelectOptions(productList);
   updateCartState();
+
+  const addToCartButton = document.getElementById('add-to-cart');
+  addToCartButton.addEventListener('click', handleAddToCartClick);
+
+  const cartItemsContainer = document.getElementById('cart-items');
+  cartItemsContainer.addEventListener('click', handleCartItemClick);
 
   setupLightningSale();
   setupRecommendationSale();
@@ -93,7 +111,7 @@ function setupLightningSale() {
 
 function setupRecommendationSale() {
   const applyRecommendationDiscount = () => {
-    const product = findRecommendedProduct(productList, lastSelectedProductId);
+    const product = findRecommendedProduct(productList, selectedProductId);
     if (!product) return;
 
     product.price = Math.round((product.price * 95) / 100);
@@ -118,7 +136,8 @@ function updateCartState() {
     totalItemCount,
     subTotalBeforeDiscount,
     subTotalAfterDiscount: subTotalAfterItemDiscount,
-  } = calculateCartTotals(cartElements);
+    itemDiscounts,
+  } = calculateCartTotals(cartElements, productList);
   let subTotalAfterDiscount = subTotalAfterItemDiscount;
 
   if (totalItemCount >= 30) {
@@ -156,7 +175,7 @@ const updatePricesInCart = () => {
   const cartElements = getCartElements();
 
   for (const cartElement of cartElements) {
-    const product = getProductById(cartElement.id);
+    const product = getProductById(productList, cartElement.id);
     if (!product) continue;
 
     const priceDiv = cartElements.querySelector('.text-lg');
@@ -170,102 +189,59 @@ const updatePricesInCart = () => {
   updateCartState();
 };
 
-main();
+const handleAddToCartClick = () => {
+  const selectedId = document.getElementById('product-select').value;
+  const selectedProduct = getProductById(productList, selectedId);
 
-addToCartButton.addEventListener('click', (e) => {
-  const selectedItemId = e.target.value;
-
-  let hasItem = false;
-  for (let idx = 0; idx < productList.length; idx++) {
-    if (productList[idx].id === selectedItemId) {
-      hasItem = true;
-      break;
-    }
-  }
-  if (!selItem || !hasItem) {
+  if (!selectedProduct || selectedProduct.quantity === 0) {
     return;
   }
-  let itemToAdd = null;
-  for (let j = 0; j < productList.length; j++) {
-    if (productList[j].id === selItem) {
-      itemToAdd = productList[j];
-      break;
-    }
-  }
-  if (itemToAdd && itemToAdd.quantity > 0) {
-    const item = document.getElementById(itemToAdd['id']);
-    if (item) {
-      const qtyElem = item.querySelector('.quantity-number');
-      const newQty = parseInt(qtyElem['textContent']) + 1;
-      if (newQty <= itemToAdd.quantity + parseInt(qtyElem.textContent)) {
-        qtyElem.textContent = newQty;
-        itemToAdd['quantity']--;
-      } else {
-        alert('재고가 부족합니다.');
-      }
-    } else {
-      const newItem = document.createElement('div');
-      newItem.id = itemToAdd.id;
-      newItem.className =
-        'grid grid-cols-[80px_1fr_auto] gap-5 py-5 border-b border-gray-100 first:pt-0 last:border-b-0 last:pb-0';
-      newItem.innerHTML = `
-        <div class="w-20 h-20 bg-gradient-black relative overflow-hidden">
-          <div class="absolute top-1/2 left-1/2 w-[60%] h-[60%] bg-white/10 -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
-        </div>
-        <div>
-          <h3 class="text-base font-normal mb-1 tracking-tight">${itemToAdd.isOnSale && itemToAdd.isRecommended ? '⚡💝' : itemToAdd.isOnSale ? '⚡' : itemToAdd.isRecommended ? '💝' : ''}${itemToAdd.name}</h3>
-          <p class="text-xs text-gray-500 mb-0.5 tracking-wide">PRODUCT</p>
-          <p class="text-xs text-black mb-3">${itemToAdd.isOnSale || itemToAdd.isRecommended ? `<span class="line-through text-gray-400">${formatPrice(itemToAdd.originalPrice)}</span> <span class="${itemToAdd.isOnSale && itemToAdd.isRecommended ? 'text-purple-600' : itemToAdd.isOnSale ? 'text-red-500' : 'text-blue-500'}">${formatPrice(itemToAdd.price)}</span>` : `${formatPrice(itemToAdd.price)}`}</p>
-          <div class="flex items-center gap-4">
-            <button class="quantity-change w-6 h-6 border border-black bg-white text-sm flex items-center justify-center transition-all hover:bg-black hover:text-white" data-product-id="${itemToAdd.id}" data-change="-1">−</button>
-            <span class="quantity-number text-sm font-normal min-w-[20px] text-center tabular-nums">1</span>
-            <button class="quantity-change w-6 h-6 border border-black bg-white text-sm flex items-center justify-center transition-all hover:bg-black hover:text-white" data-product-id="${itemToAdd.id}" data-change="1">+</button>
-          </div>
-        </div>
-        <div class="text-right">
-            <div class="text-lg mb-2 tracking-tight tabular-nums">${itemToAdd.isOnSale || itemToAdd.isRecommended ? `<span class="line-through text-gray-400">${formatPrice(itemToAdd.originalPrice)}</span> <span class="${itemToAdd.isOnSale && itemToAdd.isRecommended ? 'text-purple-600' : itemToAdd.isOnSale ? 'text-red-500' : 'text-blue-500'}">${formatPrice(itemToAdd.price)}</span>` : `${formatPrice(itemToAdd.price)}`}</div>
-          <a class="remove-item text-2xs text-gray-500 uppercase tracking-wider cursor-pointer transition-colors border-b border-transparent hover:text-black hover:border-black" data-product-id="${itemToAdd.id}">Remove</a>
-        </div>
-      `;
-      cartItemsContainer.appendChild(newItem);
-      itemToAdd.quantity--;
-    }
-    updateCartState();
-    lastSelectedProductId = selItem;
-  }
-});
 
+  const isInCart = document.getElementById(selectedProduct.id) !== null;
+  if (isInCart) {
+    if (!incrementProductQuantityInCart(selectedProduct)) return;
+  } else {
+    renderNewCartItem(selectedProduct);
+  }
+
+  updateCartState();
+  selectedProductId = selectedProduct.id;
+};
+
+main();
+
+const cartItemsContainer = document.getElementById('cart-items');
 cartItemsContainer.addEventListener('click', function (event) {
-  const tgt = event.target;
-  if (tgt.classList.contains('quantity-change') || tgt.classList.contains('remove-item')) {
-    const prodId = tgt.dataset.productId;
-    const itemElem = document.getElementById(prodId);
+  const target = event.target;
+  if (target.classList.contains('quantity-change') || target.classList.contains('remove-item')) {
+    const productId = target.dataset.productId;
+    const productElement = document.getElementById(productId);
     let prod = null;
     for (let prdIdx = 0; prdIdx < productList.length; prdIdx++) {
-      if (productList[prdIdx].id === prodId) {
+      if (productList[prdIdx].id === productId) {
         prod = productList[prdIdx];
         break;
       }
     }
-    if (tgt.classList.contains('quantity-change')) {
-      const qtyChange = parseInt(tgt.dataset.change);
-      var qtyElem = itemElem.querySelector('.quantity-number');
-      const currentQty = parseInt(qtyElem.textContent);
-      const newQty = currentQty + qtyChange;
-      if (newQty > 0 && newQty <= prod.quantity + currentQty) {
-        qtyElem.textContent = newQty;
+    if (target.classList.contains('quantity-change')) {
+      const qtyChange = parseInt(target.dataset.change);
+      var quantityElement = productElement.querySelector('.quantity-number');
+      const currentQty = parseInt(quantityElement.textContent);
+      const newQuantity = currentQty + qtyChange;
+      if (newQuantity > 0 && newQuantity <= prod.quantity + currentQty) {
+        quantityElement.textContent = newQuantity;
         prod.quantity -= qtyChange;
-      } else if (newQty <= 0) {
+      } else if (newQuantity <= 0) {
         prod.quantity += currentQty;
-        itemElem.remove();
+        productElement.remove();
       } else {
         alert('재고가 부족합니다.');
       }
-    } else if (tgt.classList.contains('remove-item')) {
-      var qtyElem = itemElem.querySelector('.quantity-number');
-      const remQty = parseInt(qtyElem.textContent);
+    } else if (target.classList.contains('remove-item')) {
+      var quantityElement = productElement.querySelector('.quantity-number');
+      const remQty = parseInt(quantityElement.textContent);
       prod.quantity += remQty;
-      itemElem.remove();
+      productElement.remove();
     }
     if (prod && prod.quantity < 5) {
     }
@@ -273,3 +249,25 @@ cartItemsContainer.addEventListener('click', function (event) {
     renderProductSelectOptions(productList);
   }
 });
+
+function handleCartItemClick(event) {
+  const target = event.target;
+  const isQuantityChange = target.classList.contains('quantity-change');
+  const isRemoveItem = target.classList.contains('remove-item');
+  if (!isQuantityChange && !isRemoveItem) return;
+
+  const productId = target.dataset.productId;
+  const product = getProductById(productList, productId);
+  const productElement = document.getElementById(productId);
+  if (!product || !productElement) return;
+
+  if (isQuantityChange) {
+    const change = parseInt(target.dataset.change);
+    changeProductQuantity(product, productElement, change);
+  } else if (isRemoveItem) {
+    removeProduct(product, productElement);
+  }
+
+  updateCartState();
+  renderProductSelectOptions(productList);
+}

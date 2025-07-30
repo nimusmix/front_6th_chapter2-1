@@ -1,4 +1,5 @@
 import { formatPrice } from '../price';
+import { getProductById } from '../product';
 
 export const updateCartItemBoldIfNeeded = (cartElement, quantity) => {
   const priceElems = cartElement.querySelectorAll('.text-lg, .text-xs');
@@ -47,6 +48,7 @@ const updateTuesdayBadge = (isTuesday, subTotalAfterDiscount) => {
 
 const updateCartSummaryDetails = ({
   cartElements,
+  productList,
   totalItemCount,
   subTotalBeforeDiscount,
   subTotalAfterDiscount,
@@ -60,7 +62,7 @@ const updateCartSummaryDetails = ({
 
   cartElements.forEach((element) => {
     const itemId = element.id;
-    const product = productList.find((p) => p.id === itemId);
+    const product = getProductById(productList, itemId);
     if (!product) return;
 
     const quantity = parseInt(element.querySelector('.quantity-number')?.textContent || '0');
