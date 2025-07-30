@@ -1,6 +1,6 @@
 import { getIsTuesday } from './utils/date';
 import { PRODUCT_IDS } from './constants/product';
-import { renderAppLayout, renderProductSelectOptions, updateCartItemBoldIfNeeded } from './render';
+import { renderAppLayout, renderBonusPoints, renderProductSelectOptions } from './render';
 import { setupIntervalEvent } from './utils/intervalEvent';
 import { findRecommendedProduct, getLightningSaleProduct } from './utils/product';
 import { getCartElements } from './utils/cart';
@@ -137,86 +137,14 @@ function updateCartState() {
     isTuesday,
   });
 
-  renderBonusPoints();
+  renderBonusPoints({
+    cartElements,
+    productList,
+    totalItemCount,
+    subTotalAfterDiscount,
+    isTuesday,
+  });
 }
-
-const renderBonusPoints = () => {
-  const cartItemsContainer = document.getElementById('cart-items');
-  if (cartItemsContainer.children.length === 0) {
-    document.getElementById('loyalty-points').style.display = 'none';
-    return;
-  }
-
-  const basePoints = Math.floor(subTotalAfterDiscount / 1000);
-  let finalPoints = 0;
-  const pointsDetail = [];
-
-  if (basePoints > 0) {
-    finalPoints = basePoints;
-    pointsDetail.push(`기본: ${basePoints}p`);
-  }
-
-  const isTuesday = getIsTuesday();
-  if (isTuesday && basePoints > 0) {
-    finalPoints = basePoints * 2;
-    pointsDetail.push('화요일 2배');
-  }
-
-  let hasKeyboard = false;
-  let hasMouse = false;
-  let hasMonitorArm = false;
-
-  const nodes = Array.from(cartItemsContainer.children);
-  for (const node of nodes) {
-    const product = productList.find((p) => p.id === node.id);
-    if (!product) continue;
-
-    switch (product.id) {
-      case PRODUCT_IDS.KEYBOARD:
-        hasKeyboard = true;
-        break;
-      case PRODUCT_IDS.MOUSE:
-        hasMouse = true;
-        break;
-      case PRODUCT_IDS.MONITOR_ARM:
-        hasMonitorArm = true;
-        break;
-    }
-  }
-
-  if (hasKeyboard && hasMouse) {
-    finalPoints = finalPoints + 50;
-    pointsDetail.push('키보드+마우스 세트 +50p');
-
-    if (hasMonitorArm) {
-      finalPoints = finalPoints + 100;
-      pointsDetail.push('풀세트 구매 +100p');
-    }
-  }
-
-  if (totalItemCount >= 30) {
-    finalPoints += 100;
-    pointsDetail.push('대량구매(30개+) +100p');
-  } else if (totalItemCount >= 20) {
-    finalPoints += 50;
-    pointsDetail.push('대량구매(20개+) +50p');
-  } else if (totalItemCount >= 10) {
-    finalPoints += 20;
-    pointsDetail.push('대량구매(10개+) +20p');
-  }
-
-  const loyaltyPointsElement = document.getElementById('loyalty-points');
-  if (!loyaltyPointsElement) return;
-
-  loyaltyPointsElement.style.display = 'block';
-  if (finalPoints > 0) {
-    loyaltyPointsElement.innerHTML =
-      `<div>적립 포인트: <span class="font-bold">${finalPoints}p</span></div>` +
-      `<div class="text-2xs opacity-70 mt-1">${pointsDetail.join(', ')}</div>`;
-  } else {
-    loyaltyPointsElement.textContent = '적립 포인트: 0p';
-  }
-};
 
 const updatePricesInCart = () => {
   const cartItemsContainer = document.getElementById('cart-items');

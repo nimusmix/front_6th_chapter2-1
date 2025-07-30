@@ -1,3 +1,12 @@
+export const updateCartItemBoldIfNeeded = (cartElement, quantity) => {
+  const priceElems = cartElement.querySelectorAll('.text-lg, .text-xs');
+  priceElems.forEach((elem) => {
+    if (elem.classList.contains('text-lg')) {
+      elem.style.fontWeight = quantity >= 10 ? 'bold' : 'normal';
+    }
+  });
+};
+
 export const updateCartUI = ({
   cartElements,
   productList,
@@ -21,6 +30,7 @@ export const updateCartUI = ({
   updateTotalPriceDisplay(subTotalAfterDiscount);
   updateLoyaltyPointsDisplay(subTotalAfterDiscount);
   updateDiscountInfo(discountRate, subTotalBeforeDiscount, subTotalAfterDiscount);
+  updateCartItemCount(totalItemCount);
   updateStockStatus(productList);
 };
 
@@ -53,6 +63,8 @@ const updateCartSummaryDetails = ({
 
     const quantity = parseInt(element.querySelector('.quantity-number')?.textContent || '0');
     const total = product.price * quantity;
+
+    updateCartItemBoldIfNeeded(element, quantity);
 
     fragments.push(`
         <div class="flex justify-between text-xs tracking-wide text-gray-400">
@@ -139,7 +151,7 @@ const updateDiscountInfo = (discountRate, subTotalBefore, subTotalAfter) => {
     `;
 };
 
-function updateCartItemCount(totalItemCount) {
+const updateCartItemCount = (totalItemCount) => {
   const itemCountElement = document.getElementById('item-count');
   if (!itemCountElement) return;
 
@@ -151,7 +163,7 @@ function updateCartItemCount(totalItemCount) {
   if (previousItemCount !== totalItemCount) {
     itemCountElement.setAttribute('data-changed', 'true');
   }
-}
+};
 
 const updateStockStatus = (productList) => {
   const el = document.getElementById('stock-status');

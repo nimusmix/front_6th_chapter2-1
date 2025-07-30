@@ -236,11 +236,36 @@ const createProductOption = (product) => {
   return option;
 };
 
-export const updateCartItemBoldIfNeeded = (cartElement, quantity) => {
-  const priceElems = cartElement.querySelectorAll('.text-lg, .text-xs');
-  priceElems.forEach((elem) => {
-    if (elem.classList.contains('text-lg')) {
-      elem.style.fontWeight = quantity >= 10 ? 'bold' : 'normal';
-    }
+export const renderBonusPoints = ({
+  cartElements,
+  productList,
+  totalItemCount,
+  subTotalAfterDiscount,
+  isTuesday,
+}) => {
+  const loyaltyPointsElement = document.getElementById('loyalty-points');
+  if (!loyaltyPointsElement) return;
+
+  if (cartElements.length === 0) {
+    loyaltyPointsElement.style.display = 'none';
+    return;
+  }
+
+  const { finalPoints, pointsDetail } = calculateBonusPoints({
+    cartElements,
+    productList,
+    totalItemCount,
+    subTotalAfterDiscount,
+    isTuesday,
   });
+
+  loyaltyPointsElement.style.display = 'block';
+
+  if (finalPoints > 0) {
+    loyaltyPointsElement.innerHTML =
+      `<div>적립 포인트: <span class="font-bold">${finalPoints}p</span></div>` +
+      `<div class="text-2xs opacity-70 mt-1">${pointsDetail.join(', ')}</div>`;
+  } else {
+    loyaltyPointsElement.textContent = '적립 포인트: 0p';
+  }
 };
