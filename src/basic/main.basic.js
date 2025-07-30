@@ -1,6 +1,57 @@
 import { getIsTuesday } from './utils/date';
-import { PRODUCT_LIST, PRODUCT_IDS } from './constants/product';
+import { PRODUCT_IDS } from './constants/product';
 import { renderAppLayout } from './render';
+import { setupIntervalEvent } from './utils/intervalEvent';
+import { findRecommendedProduct, getLightningSaleProduct } from './utils/product';
+
+const productList = [
+  {
+    id: PRODUCT_IDS.KEYBOARD,
+    name: '버그 없애는 키보드',
+    price: 10000,
+    originalPrice: 10000,
+    quantity: 50,
+    isOnSale: false,
+    isRecommended: false,
+  },
+  {
+    id: PRODUCT_IDS.MOUSE,
+    name: '생산성 폭발 마우스',
+    price: 20000,
+    originalPrice: 20000,
+    quantity: 30,
+    isOnSale: false,
+    isRecommended: false,
+  },
+  {
+    id: PRODUCT_IDS.MONITOR_ARM,
+    name: '거북목 탈출 모니터암',
+    price: 30000,
+    originalPrice: 30000,
+    quantity: 20,
+    isOnSale: false,
+    isRecommended: false,
+  },
+  {
+    id: PRODUCT_IDS.POUCH,
+    name: '에러 방지 노트북 파우치',
+    price: 15000,
+    originalPrice: 15000,
+    quantity: 0,
+    isOnSale: false,
+    isRecommended: false,
+  },
+  {
+    id: PRODUCT_IDS.SPEAKER,
+    name: `코딩할 때 듣는 Lo-Fi 스피커`,
+    price: 25000,
+    originalPrice: 25000,
+    quantity: 10,
+    isOnSale: false,
+    isRecommended: false,
+  },
+];
+let lastSelectedProductId = null;
 
 function main() {
   renderAppLayout();
@@ -8,16 +59,14 @@ function main() {
   onUpdateSelectOptions();
   handleCalculateCartStuff();
 
-  const lightningDelay = Math.random() * 10000;
+  setupLightningSale();
+  setupRecommendationSale();
+}
+
+function setupLightningSale() {
   const applyLightningSaleToRandomProduct = () => {
-    const availableProducts = PRODUCT_LIST.filter(
-      (product) => product.quantity > 0 && !product.isOnSale,
-    );
-
-    if (availableProducts.length === 0) return;
-
-    const randomIndex = Math.floor(Math.random() * availableProducts.length);
-    const product = availableProducts[randomIndex];
+    const product = getLightningSaleProduct(productList);
+    if (!product) return;
 
     product.price = Math.round((product.originalPrice * 80) / 100);
     product.isOnSale = true;
@@ -27,55 +76,41 @@ function main() {
     updatePricesInCart();
   };
 
-  const startLightningSaleInterval = (delay = 10000, interval = 30000) => {
-    setTimeout(() => {
-      setInterval(() => {
-        applyLightningSaleToRandomProduct();
-      }, interval);
-    }, delay);
-  };
-  startLightningSaleInterval(lightningDelay);
+  setupIntervalEvent({
+    action: applyLightningSaleToRandomProduct,
+    delay: Math.random() * 10000,
+    interval: 30000,
+  });
+}
 
-  let lastSelectedProductId = null;
-  const findRecommendedProduct = (excludeId) => {
-    return PRODUCT_LIST.find(
-      (product) => product.id !== excludeId && product.quantity > 0 && !product.isRecommended,
-    );
-  };
+function setupRecommendationSale() {
+  const applyRecommendationDiscount = () => {
+    const product = findRecommendedProduct(productList, lastSelectedProductId);
+    if (!product) return;
 
-  const applyRecommendationDiscount = (product) => {
     product.price = Math.round((product.price * 95) / 100);
     product.isRecommended = true;
+
     alert(`💝 ${product.name}은(는) 어떠세요? 지금 구매하시면 5% 추가 할인!`);
     onUpdateSelectOptions();
     updatePricesInCart();
   };
 
-  const startRecommendationInterval = (delay = 20000, interval = 60000) => {
-    setTimeout(() => {
-      setInterval(() => {
-        if (!lastSelectedProductId) return;
-        if (cartItemsContainer.children.length > 0) return;
-
-        const product = findRecommendedProduct(lastSelectedProductId);
-        if (product) {
-          applyRecommendationDiscount(product);
-        }
-      }, interval);
-    }, delay);
-  };
-
-  startRecommendationInterval();
+  setupIntervalEvent({
+    delay: 20000,
+    interval: 60000,
+    action: applyRecommendationDiscount,
+  });
 }
 
 function onUpdateSelectOptions() {
   const productSelectElement = document.getElementById('product-select');
   productSelectElement.innerHTML = '';
 
-  const totalStock = PRODUCT_LIST.reduce((total, product) => total + product.quantity, 0);
+  const totalStock = productList.reduce((total, product) => total + product.quantity, 0);
 
-  for (let i = 0; i < PRODUCT_LIST.length; i++) {
-    const item = PRODUCT_LIST[i];
+  for (let i = 0; i < productList.length; i++) {
+    const item = productList[i];
 
     const optionElement = document.createElement('option');
     optionElement.value = item.id;
@@ -118,7 +153,7 @@ function handleCalculateCartStuff() {
   const itemDiscounts = [];
 
   cartElements.forEach((cartElement) => {
-    const product = PRODUCT_LIST.find((p) => p.id === cartElement.id);
+    const product = productList.find((p) => p.id === cartElement.id);
     if (!product) return;
 
     const quantity = parseInt(cartElement.querySelector('.quantity-number').textContent, 10);
@@ -176,7 +211,7 @@ function handleCalculateCartStuff() {
 
     cartElements.forEach((element) => {
       const itemId = element.id;
-      const product = PRODUCT_LIST.find((p) => p.id === itemId);
+      const product = productList.find((p) => p.id === itemId);
       if (!product) return;
 
       const quantity = parseInt(element.querySelector('.quantity-number')?.textContent || '0');
@@ -273,12 +308,14 @@ function handleCalculateCartStuff() {
     }
   }
 
-  const stockMessages = PRODUCT_LIST.filter((item) => item.quantity < 5).map((item) => {
-    if (item.quantity > 0) {
-      return `${item.name}: 재고 부족 (${item.quantity}개 남음)`;
-    }
-    return `${item.name}: 품절`;
-  });
+  const stockMessages = productList
+    .filter((item) => item.quantity < 5)
+    .map((item) => {
+      if (item.quantity > 0) {
+        return `${item.name}: 재고 부족 (${item.quantity}개 남음)`;
+      }
+      return `${item.name}: 품절`;
+    });
 
   const stockStatusElement = document.getElementById('stock-status');
   stockStatusElement.textContent = stockMessages.join('\n');
@@ -315,7 +352,7 @@ const renderBonusPoints = () => {
 
   const nodes = Array.from(cartItemsContainer.children);
   for (const node of nodes) {
-    const product = PRODUCT_LIST.find((p) => p.id === node.id);
+    const product = productList.find((p) => p.id === node.id);
     if (!product) continue;
 
     switch (product.id) {
@@ -366,13 +403,15 @@ const renderBonusPoints = () => {
 };
 
 const handleStockStatusElementUpdate = () => {
-  const lowStockItems = PRODUCT_LIST.filter((item) => item.quantity < 5).map((item) => {
-    if (item.quantity > 0) {
-      return `${item.name}: 재고 부족 (${item.quantity}개 남음)`;
-    } else {
-      return `${item.name}: 품절`;
-    }
-  });
+  const lowStockItems = productList
+    .filter((item) => item.quantity < 5)
+    .map((item) => {
+      if (item.quantity > 0) {
+        return `${item.name}: 재고 부족 (${item.quantity}개 남음)`;
+      } else {
+        return `${item.name}: 품절`;
+      }
+    });
 
   const stockStatusElement = document.getElementById('stock-status');
   stockStatusElement.textContent = lowStockItems.join('\n');
@@ -385,7 +424,7 @@ const updatePricesInCart = () => {
   let totalCount = 0;
   for (const cartItemElement of cartItemElements) {
     const itemId = cartItemElement.id;
-    const product = PRODUCT_LIST.find((p) => p.id === itemId);
+    const product = productList.find((p) => p.id === itemId);
     if (!product) continue;
 
     const qtyEl = cartItemElement.querySelector('.quantity-number');
@@ -423,11 +462,16 @@ const updatePricesInCart = () => {
 
 main();
 
-addToCartButton.addEventListener('click', function () {
-  const selItem = sel.value;
+addToCartButton.addEventListener('click', (e) => {
+  const selectedItemId = e.target.value;
+  console.log(selectedItemId);
+  console.log(selectedItemId);
+  console.log(selectedItemId);
+  console.log(selectedItemId);
+
   let hasItem = false;
-  for (let idx = 0; idx < PRODUCT_LIST.length; idx++) {
-    if (PRODUCT_LIST[idx].id === selItem) {
+  for (let idx = 0; idx < productList.length; idx++) {
+    if (productList[idx].id === selectedItemId) {
       hasItem = true;
       break;
     }
@@ -436,9 +480,9 @@ addToCartButton.addEventListener('click', function () {
     return;
   }
   let itemToAdd = null;
-  for (let j = 0; j < PRODUCT_LIST.length; j++) {
-    if (PRODUCT_LIST[j].id === selItem) {
-      itemToAdd = PRODUCT_LIST[j];
+  for (let j = 0; j < productList.length; j++) {
+    if (productList[j].id === selItem) {
+      itemToAdd = productList[j];
       break;
     }
   }
@@ -491,9 +535,9 @@ cartItemsContainer.addEventListener('click', function (event) {
     const prodId = tgt.dataset.productId;
     const itemElem = document.getElementById(prodId);
     let prod = null;
-    for (let prdIdx = 0; prdIdx < PRODUCT_LIST.length; prdIdx++) {
-      if (PRODUCT_LIST[prdIdx].id === prodId) {
-        prod = PRODUCT_LIST[prdIdx];
+    for (let prdIdx = 0; prdIdx < productList.length; prdIdx++) {
+      if (productList[prdIdx].id === prodId) {
+        prod = productList[prdIdx];
         break;
       }
     }
