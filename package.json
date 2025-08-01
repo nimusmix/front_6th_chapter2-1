@@ -14,7 +14,8 @@
     "test:advanced": "vitest advanced.test.js",
     "test:ui": "vitest --ui",
     "lint:basic": "pnpm eslint src/basic/**",
-    "lint:advanced": "pnpm eslint src/advanced/**"
+    "lint:advanced": "pnpm eslint src/advanced/**",
+    "gh-pages": "pnpm build && cp dist/index.advanced.html dist/index.html && cp dist/index.html dist/404.html && gh-pages -d dist"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
@@ -36,7 +37,8 @@
     "jsdom": "^26.1.0",
     "prettier": "3.6.2",
     "vite": "^7.0.5",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "gh-pages": "^6.3.0"
   },
   "dependencies": {
     "@types/react": "^19.1.9",
